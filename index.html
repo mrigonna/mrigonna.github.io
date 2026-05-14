@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flowers for you 🌸</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Crimson+Pro:wght@300;400&display=swap');
+
+  :root {
+    --bg: #0a0005;
+    --bg2: #120008;
+    --red: #ff3a3a;
+    --coral: #ff6b4a;
+    --teal: #2dd4bf;
+    --green: #22c55e;
+    --dark-green: #15803d;
+    --glow-red: rgba(255, 80, 60, 0.6);
+    --glow-teal: rgba(45, 212, 191, 0.5);
+    --glow-green: rgba(34, 197, 94, 0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  /* Starfield */
+  .stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+    animation: twinkle var(--d) ease-in-out infinite alternate;
+    opacity: 0;
+  }
+  @keyframes twinkle {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: var(--op); transform: scale(1); }
+  }
+
+  /* Ambient glow background */
+  .ambient {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(ellipse 70% 40% at 50% 100%, rgba(180,30,30,0.15) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 2s ease;
+  }
+  .ambient.show { opacity: 1; }
+
+  /* Button */
+  #start-btn {
+    position: relative;
+    z-index: 10;
+    padding: 18px 48px;
+    background: transparent;
+    border: 1.5px solid rgba(255, 100, 80, 0.6);
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-style: italic;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(255,80,60,0.2), inset 0 0 20px rgba(255,80,60,0.05);
+    animation: pulse-btn 2.5s ease-in-out infinite;
+  }
+  #start-btn:hover {
+    background: rgba(255,80,60,0.1);
+    box-shadow: 0 0 40px rgba(255,80,60,0.5), inset 0 0 30px rgba(255,80,60,0.1);
+    border-color: rgba(255,100,80,0.9);
+    transform: scale(1.05);
+  }
+  @keyframes pulse-btn {
+    0%, 100% { box-shadow: 0 0 20px rgba(255,80,60,0.2), inset 0 0 20px rgba(255,80,60,0.05); }
+    50% { box-shadow: 0 0 35px rgba(255,80,60,0.4), inset 0 0 25px rgba(255,80,60,0.1); }
+  }
+  #start-btn.hide {
+    animation: btn-disappear 0.6s ease forwards;
+  }
+  @keyframes btn-disappear {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0; transform: scale(1.2); }
+    100% { opacity: 0; transform: scale(0); pointer-events: none; }
+  }
+
+  /* Scene */
+  #scene {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* Ground */
+  .ground {
+    position: absolute;
+    bottom: 0;
+    left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(to top, #0d0d0d, transparent);
+    z-index: 1;
+  }
+
+  /* SVG Garden */
+  #garden {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    max-width: 900px;
+    height: 75vh;
+    clip-path: inset(0);
+  }
+
+  /* Floating labels */
+  .label {
+    position: absolute;
+    background: rgba(180, 30, 30, 0.85);
+    color: #fff;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.82rem;
+    padding: 7px 16px;
+    border-radius: 20px;
+    white-space: nowrap;
+    opacity: 0;
+    box-shadow: 0 0 15px rgba(255,60,60,0.5);
+    pointer-events: none;
+    letter-spacing: 0.03em;
+  }
+  .label.with-heart::after {
+    content: ' ♥';
+    font-size: 0.7em;
+    color: #ff8888;
+  }
+
+  /* Particle dots */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: float-particle var(--dur) ease-in-out infinite alternate;
+    opacity: 0;
+  }
+  @keyframes float-particle {
+    0% { transform: translateY(0) scale(1); opacity: var(--op); }
+    100% { transform: translateY(-20px) scale(1.3); opacity: calc(var(--op) * 0.4); }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="ambient" id="ambient"></div>
+
+<button id="start-btn">bloom for you 🌸</button>
+
+<div id="scene">
+  <div class="ground"></div>
+  <svg id="garden" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet"></svg>
+</div>
+
+<!-- Floating labels -->
+<div class="label" id="l1" style="top:18%;left:6%">You are my favorite person</div>
+<div class="label with-heart" id="l2" style="top:45%;left:2%">You make my world brighter</div>
+<div class="label" id="l3" style="top:20%;right:5%">I'm lucky to have you</div>
+<div class="label with-heart" id="l4" style="top:52%;right:3%">Every flower reminds me of you</div>
+
+<script>
+// ─── Stars ───────────────────────────────────────────────
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 120; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random() * 2.5 + 0.5;
+  s.style.cssText = `
+    width:${size}px; height:${size}px;
+    top:${Math.random()*100}%;
+    left:${Math.random()*100}%;
+    --d:${(Math.random()*3+1.5).toFixed(1)}s;
+    --op:${(Math.random()*0.7+0.1).toFixed(2)};
+    animation-delay:${(Math.random()*4).toFixed(1)}s;
+  `;
+  starsEl.appendChild(s);
+}
+
+// ─── SVG helpers ─────────────────────────────────────────
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('garden');
+
+function el(tag, attrs={}) {
+  const e = document.createElementNS(SVG_NS, tag);
+  for (const [k,v] of Object.entries(attrs)) e.setAttribute(k,v);
+  return e;
+}
+
+function addDefs() {
+  const defs = el('defs');
+
+  // Glow filters
+  const glows = [
+    { id:'glow-red',   color:'#ff5533', stdDev:8  },
+    { id:'glow-teal',  color:'#2dd4bf', stdDev:7  },
+    { id:'glow-green', color:'#22c55e', stdDev:6  },
+    { id:'glow-soft',  color:'#ffaa88', stdDev:10 },
+  ];
+  for (const g of glows) {
+    const f = el('filter', { id: g.id, x:'-50%', y:'-50%', width:'200%', height:'200%' });
+    const fe1 = el('feGaussianBlur', { in:'SourceGraphic', stdDeviation: g.stdDev, result:'blur' });
+    const fe2 = el('feFlood', { 'flood-color': g.color, 'flood-opacity':'0.8', result:'color' });
+    const fe3 = el('feComposite', { in:'color', in2:'blur', operator:'in', result:'glow' });
+    const fe4 = el('feMerge');
+    [el('feMergeNode',{in:'glow'}), el('feMergeNode',{in:'SourceGraphic'})].forEach(n=>fe4.appendChild(n));
+    [fe1,fe2,fe3,fe4].forEach(n=>f.appendChild(n));
+    defs.appendChild(f);
+  }
+
+  // Gradients for flower petals
+  const makeRadial = (id, c1, c2) => {
+    const g = el('radialGradient', { id, cx:'50%', cy:'50%', r:'70%' });
+    const s1 = el('stop', { offset:'0%', 'stop-color': c1 });
+    const s2 = el('stop', { offset:'100%', 'stop-color': c2 });
+    [s1,s2].forEach(s=>g.appendChild(s));
+    defs.appendChild(g);
+  };
+  makeRadial('petal-grad', '#ff8855', '#e03020');
+  makeRadial('center-grad', '#ffdd44', '#ff9900');
+  makeRadial('leaf-grad', '#26d4cc', '#0ea5e9');
+
+  svg.appendChild(defs);
+}
+
+// ─── Plant drawing ────────────────────────────────────────
+
+function makeStem(x, baseY, height, color='#22c55e', width=5) {
+  const g = el('g', { class:'stem-group' });
+  // Main stem
+  const stem = el('line', {
+    x1: x, y1: baseY,
+    x2: x, y2: baseY - height,
+    stroke: color,
+    'stroke-width': width,
+    'stroke-linecap': 'round',
+    filter: 'url(#glow-green)',
+    'stroke-dasharray': height,
+    'stroke-dashoffset': height,
+  });
+  g.appendChild(stem);
+  return { g, stem };
+}
+
+function makeLeaf(x, y, angle, scale=1, color='url(#leaf-grad)', filter='url(#glow-teal)') {
+  const g = el('g', { transform: `translate(${x},${y}) rotate(${angle}) scale(${scale})` });
+  const path = el('path', {
+    d: 'M0,0 C10,-20 30,-25 20,-5 C30,-20 25,10 0,0 Z',
+    fill: color,
+    filter,
+    opacity: '0',
+  });
+  g.appendChild(path);
+  return { g, path };
+}
+
+function makeFlower(cx, cy, scale=1, filter='url(#glow-red)') {
+  const g = el('g', { transform: `translate(${cx},${cy}) scale(${scale})`, opacity:'0' });
+  const petalCount = 5;
+  for (let i = 0; i < petalCount; i++) {
+    const angle = (360/petalCount)*i;
+    const p = el('ellipse', {
+      cx: 0, cy: -22,
+      rx: 12, ry: 18,
+      fill: 'url(#petal-grad)',
+      filter,
+      transform: `rotate(${angle})`,
+      opacity: '0.9',
+    });
+    g.appendChild(p);
+  }
+  const center = el('circle', { cx:0, cy:0, r:10, fill:'url(#center-grad)', filter:'url(#glow-soft)' });
+  g.appendChild(center);
+  return g;
+}
+
+function makeGrass(x, baseY, height, lean=0, color='#15803d') {
+  const g = el('g');
+  const blade = el('path', {
+    d: `M${x},${baseY} Q${x+lean},${baseY-height*0.5} ${x+lean*2},${baseY-height}`,
+    stroke: color,
+    'stroke-width': 3,
+    'stroke-linecap': 'round',
+    fill: 'none',
+    filter: 'url(#glow-green)',
+    'stroke-dasharray': height * 1.2,
+    'stroke-dashoffset': height * 1.2,
+  });
+  g.appendChild(blade);
+  return { g, blade };
+}
+
+// ─── Animate helpers ──────────────────────────────────────
+
+function animateDash(el, delay=0, duration=800) {
+  return new Promise(res => {
+    setTimeout(() => {
+      el.style.transition = `stroke-dashoffset ${duration}ms cubic-bezier(0.25,0.46,0.45,0.94)`;
+      el.setAttribute('stroke-dashoffset', '0');
+      setTimeout(res, duration);
+    }, delay);
+  });
+}
+
+function animateFadeIn(el, delay=0, duration=600, scale=true) {
+  return new Promise(res => {
+    setTimeout(() => {
+      el.style.transition = `opacity ${duration}ms ease, transform ${duration}ms cubic-bezier(0.34,1.56,0.64,1)`;
+      el.style.transformOrigin = 'center bottom';
+      if (scale) { el.style.transform = 'scale(0)'; }
+      el.setAttribute('opacity','0');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.setAttribute('opacity','1');
+          if (scale) el.style.transform = 'scale(1)';
+        });
+      });
+      setTimeout(res, duration);
+    }, delay);
+  });
+}
+
+// ─── Build the garden ─────────────────────────────────────
+
+function buildGarden() {
+  addDefs();
+
+  const W = 900, baseY = 590;
+  const elements = [];
+
+  // --- Grass clusters ---
+  const grassData = [
+    // [x, height, lean, color]
+    [60,  110, -15, '#15803d'], [80, 95, 8, '#166534'],
+    [130, 130, -10, '#15803d'], [150, 80, 12, '#14532d'],
+    [700, 100, 10, '#15803d'], [730, 120, -8, '#166534'],
+    [800, 90, 15, '#15803d'], [820, 105, -12, '#14532d'],
+    [200, 70, 5, '#166534'], [650, 75, -5, '#166534'],
+    [430, 65, 8, '#15803d'], [460, 80, -6, '#14532d'],
+  ];
+  for (const [x, h, lean, color] of grassData) {
+    const {g, blade} = makeGrass(x, baseY, h, lean, color);
+    svg.appendChild(g);
+    elements.push({ type:'dash', el: blade, delay: 400 + Math.random()*800 });
+  }
+
+  // --- Main plants (stem + leaves + flower) ---
+  const plants = [
+    { x:350, h:280, scale:1.3, stemW:7,  leafSide: -1, leafCount:3 },
+    { x:420, h:310, scale:1.4, stemW:7,  leafSide: 1,  leafCount:3 },
+    { x:480, h:250, scale:1.2, stemW:6,  leafSide: -1, leafCount:2 },
+    { x:310, h:200, scale:1.0, stemW:5,  leafSide: 1,  leafCount:2 },
+    { x:550, h:190, scale:0.9, stemW:5,  leafSide: -1, leafCount:2 },
+  ];
+
+  let plantDelay = 600;
+  for (const [pi, plant] of plants.entries()) {
+    const { x, h, scale, stemW, leafSide, leafCount } = plant;
+    const d = plantDelay + pi * 300;
+
+    // Stem
+    const { g: stemG, stem } = makeStem(x, baseY, h, '#22c55e', stemW);
+    svg.appendChild(stemG);
+    elements.push({ type:'dash', el: stem, delay: d, duration: 700 + h });
+
+    // Leaves along stem
+    for (let li = 0; li < leafCount; li++) {
+      const ly = baseY - h * (0.35 + li * 0.25);
+      const lx = x + leafSide * 10;
+      const lAngle = leafSide * (40 + li * 10);
+      const { g: lg, path: lp } = makeLeaf(lx, ly, lAngle, 0.9 + li*0.1);
+      svg.appendChild(lg);
+      elements.push({ type:'fade', el: lp, delay: d + 400 + li*200 });
+    }
+
+    // Flower at top
+    const flower = makeFlower(x, baseY - h - 5, scale);
+    svg.appendChild(flower);
+    elements.push({ type:'fade', el: flower, delay: d + 900 + h * 0.5, scale: true });
+  }
+
+  // Teal decorative leaves (big ones)
+  const tealLeaves = [
+    { x:250, y: baseY-120, angle:-30, scale:2.5 },
+    { x:280, y: baseY-80,  angle:-50, scale:2.2 },
+    { x:590, y: baseY-100, angle:30,  scale:2.3 },
+    { x:560, y: baseY-70,  angle:50,  scale:2.0 },
+    { x:390, y: baseY-60,  angle:-20, scale:1.8 },
+    { x:450, y: baseY-50,  angle:25,  scale:1.9 },
+  ];
+  for (const [ti, tl] of tealLeaves.entries()) {
+    const { g: lg, path: lp } = makeLeaf(tl.x, tl.y, tl.angle, tl.scale, 'url(#leaf-grad)', 'url(#glow-teal)');
+    svg.appendChild(lg);
+    elements.push({ type:'fade', el: lp, delay: 1200 + ti * 180 });
+  }
+
+  return elements;
+}
+
+// ─── Floating particles ───────────────────────────────────
+
+function spawnParticles() {
+  const colors = ['#ff6b4a','#ff9977','#2dd4bf','#22c55e','#ffdd77'];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 5 + 2;
+    const color = colors[Math.floor(Math.random()*colors.length)];
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      background: ${color};
+      box-shadow: 0 0 ${size*3}px ${color};
+      left: ${20 + Math.random()*60}%;
+      top: ${10 + Math.random()*70}%;
+      --dur: ${(Math.random()*3+2).toFixed(1)}s;
+      --op: ${(Math.random()*0.6+0.2).toFixed(2)};
+      animation-delay: ${(Math.random()*2).toFixed(1)}s;
+    `;
+    document.body.appendChild(p);
+  }
+}
+
+// ─── Labels ───────────────────────────────────────────────
+
+function showLabels() {
+  const labels = [
+    { id:'l1', delay: 2200 },
+    { id:'l3', delay: 2700 },
+    { id:'l2', delay: 3200 },
+    { id:'l4', delay: 3700 },
+  ];
+  for (const {id, delay} of labels) {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      el.style.transition = 'opacity 0.8s ease, transform 0.8s cubic-bezier(0.34,1.56,0.64,1)';
+      el.style.transform = 'translateY(10px)';
+      el.style.opacity = '0';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        });
+      });
+    }, delay);
+  }
+}
+
+// ─── Main trigger ─────────────────────────────────────────
+
+document.getElementById('start-btn').addEventListener('click', function() {
+  this.classList.add('hide');
+
+  setTimeout(() => {
+    document.getElementById('ambient').classList.add('show');
+    spawnParticles();
+
+    const elements = buildGarden();
+    showLabels();
+
+    // Animate all elements
+    for (const item of elements) {
+      if (item.type === 'dash') {
+        animateDash(item.el, item.delay, item.duration || 800);
+      } else {
+        setTimeout(() => {
+          const e = item.el;
+          if (item.scale) {
+            // SVG element - animate via style
+            e.style.transition = `opacity 0.6s ease`;
+            e.setAttribute('opacity','0');
+            setTimeout(() => {
+              e.setAttribute('opacity','1');
+              // Bloom scale via transform
+              const origTransform = e.getAttribute('transform') || '';
+              e.setAttribute('transform', origTransform + ' scale(0.1)');
+              e.style.transition = 'opacity 0.5s ease';
+              setTimeout(() => {
+                e.style.transition = 'none';
+                e.setAttribute('opacity','1');
+                // Animate scale with keyframes via CSS
+                e.style.animation = 'none';
+                const t = e.getAttribute('transform').replace(' scale(0.1)','');
+                e.setAttribute('transform', t);
+                // Manual spring
+                let s = 0.1, v = 0;
+                const target = 1;
+                const spring = () => {
+                  v += (target - s) * 0.18;
+                  v *= 0.72;
+                  s += v;
+                  e.setAttribute('transform', t + ` scale(${s.toFixed(4)})`);
+                  if (Math.abs(target - s) > 0.002 || Math.abs(v) > 0.001) requestAnimationFrame(spring);
+                  else e.setAttribute('transform', t);
+                };
+                requestAnimationFrame(spring);
+              }, 50);
+            }, 20);
+          } else {
+            e.style.transition = `opacity 0.6s ease, transform 0.6s cubic-bezier(0.34,1.56,0.64,1)`;
+            e.style.transform = 'scale(0.5)';
+            e.setAttribute('opacity','0');
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              e.setAttribute('opacity','1');
+              e.style.transform = 'scale(1)';
+            }));
+          }
+        }, item.delay);
+      }
+    }
+  }, 400);
+});
+</script>
+</body>
+</html>
