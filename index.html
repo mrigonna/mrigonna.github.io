@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>für dich 🌸</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,600&family=Crimson+Pro:wght@300;400;600&display=swap');
+
+:root {
+  --bg: #06000a;
+  --pink: #f472b6;
+  --pink2: #ec4899;
+  --rose: #fda4af;
+  --cream: #fce7f3;
+  --teal: #2dd4bf;
+  --green: #16a34a;
+  --gold: #fbbf24;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  min-height: 100vh;
+  overflow: hidden;
+  font-family: 'Crimson Pro', serif;
+  color: var(--cream);
+  cursor: default;
+}
+
+/* ── Stars ── */
+.stars { position:fixed; inset:0; pointer-events:none; z-index:0; }
+.star {
+  position:absolute; border-radius:50%; background:white;
+  animation: twinkle var(--d) ease-in-out infinite alternate;
+  opacity:0;
+}
+@keyframes twinkle {
+  0%   { opacity:0; }
+  100% { opacity:var(--op); }
+}
+
+/* ── Ambient ── */
+.ambient {
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background: radial-gradient(ellipse 70% 45% at 50% 100%, rgba(236,72,153,0.1) 0%, transparent 70%);
+}
+
+/* ── Screens ── */
+.screen {
+  position:fixed; inset:0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  z-index:10; padding:24px;
+  opacity:0; pointer-events:none;
+  transition: opacity 0.6s ease;
+}
+.screen.active { opacity:1; pointer-events:auto; }
+
+/* ── Start Screen ── */
+#screen-start { gap:20px; }
+.title-main {
+  font-family:'Cormorant Garamond', serif;
+  font-size:clamp(2rem,6vw,3.2rem);
+  font-style:italic;
+  font-weight:300;
+  color:var(--rose);
+  text-shadow: 0 0 40px rgba(244,114,182,0.5);
+  text-align:center;
+  line-height:1.2;
+}
+.title-sub {
+  font-size:1rem;
+  color:rgba(252,231,243,0.5);
+  letter-spacing:0.12em;
+  text-align:center;
+}
+.start-btn {
+  margin-top:16px;
+  padding:16px 48px;
+  background:transparent;
+  border:1.5px solid rgba(244,114,182,0.5);
+  color:var(--cream);
+  font-family:'Cormorant Garamond', serif;
+  font-size:1.2rem;
+  font-style:italic;
+  letter-spacing:0.08em;
+  border-radius:50px;
+  cursor:pointer;
+  transition:all 0.3s;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+.start-btn:hover {
+  background:rgba(244,114,182,0.1);
+  border-color:var(--pink);
+  box-shadow:0 0 40px rgba(244,114,182,0.4);
+  transform:scale(1.04);
+}
+@keyframes pulse-glow {
+  0%,100% { box-shadow:0 0 18px rgba(244,114,182,0.15); }
+  50%      { box-shadow:0 0 35px rgba(244,114,182,0.35); }
+}
+
+/* ── Quiz Screen ── */
+#screen-quiz { gap:0; justify-content:center; }
+
+.quiz-wrap {
+  width:100%; max-width:560px;
+  display:flex; flex-direction:column; gap:0;
+}
+
+/* Progress */
+.progress-bar-wrap {
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:28px;
+}
+.progress-track {
+  flex:1; height:3px;
+  background:rgba(244,114,182,0.15);
+  border-radius:2px; overflow:hidden;
+}
+.progress-fill {
+  height:100%; background:linear-gradient(to right,var(--pink2),var(--rose));
+  border-radius:2px;
+  transition:width 0.5s cubic-bezier(0.34,1.3,0.64,1);
+  box-shadow:0 0 8px rgba(244,114,182,0.6);
+}
+.progress-label {
+  font-size:0.78rem;
+  color:rgba(252,231,243,0.4);
+  letter-spacing:0.1em;
+  white-space:nowrap;
+}
+
+/* Question card */
+.q-card {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(244,114,182,0.12);
+  border-radius:20px;
+  padding:32px 36px 28px;
+  backdrop-filter:blur(16px);
+  box-shadow:0 0 60px rgba(244,114,182,0.06);
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+.q-card.exit-left  { transform:translateX(-60px); opacity:0; }
+.q-card.exit-right { transform:translateX(60px);  opacity:0; }
+.q-card.enter      { transform:translateY(20px);   opacity:0; }
+
+.q-number {
+  font-size:0.72rem;
+  letter-spacing:0.18em;
+  color:rgba(244,114,182,0.5);
+  margin-bottom:12px;
+  text-transform:uppercase;
+}
+.q-text {
+  font-family:'Cormorant Garamond', serif;
+  font-size:clamp(1.2rem,3.5vw,1.6rem);
+  font-style:italic;
+  font-weight:300;
+  color:var(--cream);
+  line-height:1.4;
+  margin-bottom:26px;
+}
+
+/* Answer options */
+.answers { display:flex; flex-direction:column; gap:10px; }
+.ans-btn {
+  padding:13px 20px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(244,114,182,0.18);
+  border-radius:12px;
+  color:rgba(252,231,243,0.8);
+  font-family:'Crimson Pro', serif;
+  font-size:1rem;
+  letter-spacing:0.02em;
+  cursor:pointer;
+  text-align:left;
+  transition:all 0.22s ease;
+  position:relative;
+  overflow:hidden;
+}
+.ans-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(244,114,182,0.08),transparent);
+  opacity:0; transition:opacity 0.2s;
+}
+.ans-btn:hover { border-color:rgba(244,114,182,0.5); color:var(--cream); transform:translateX(4px); }
+.ans-btn:hover::before { opacity:1; }
+.ans-btn.correct {
+  border-color:#4ade80;
+  background:rgba(74,222,128,0.08);
+  color:#86efac;
+  box-shadow:0 0 20px rgba(74,222,128,0.2);
+  animation: correct-pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ans-btn.wrong {
+  border-color:rgba(239,68,68,0.6);
+  background:rgba(239,68,68,0.06);
+  color:rgba(252,165,165,0.7);
+  animation: shake 0.35s ease;
+}
+@keyframes correct-pop {
+  0%   { transform:scale(1); }
+  50%  { transform:scale(1.03); }
+  100% { transform:scale(1); }
+}
+@keyframes shake {
+  0%,100% { transform:translateX(0); }
+  25%      { transform:translateX(-6px); }
+  75%      { transform:translateX(6px); }
+}
+
+/* Feedback */
+.feedback {
+  margin-top:14px; min-height:28px;
+  font-family:'Cormorant Garamond', serif;
+  font-size:1.05rem;
+  font-style:italic;
+  text-align:center;
+  opacity:0; transition:opacity 0.3s;
+}
+.feedback.show { opacity:1; }
+.feedback.ok  { color:#86efac; text-shadow:0 0 12px rgba(74,222,128,0.5); }
+.feedback.bad { color:#fca5a5; }
+
+/* Bloom burst (mini flowers per correct answer) */
+.bloom-burst {
+  position:fixed; pointer-events:none; z-index:50;
+  font-size:1.6rem;
+  animation: burst-up 1.2s ease forwards;
+}
+@keyframes burst-up {
+  0%   { transform:translateY(0) scale(0.5) rotate(-20deg); opacity:1; }
+  100% { transform:translateY(-120px) scale(1.2) rotate(20deg); opacity:0; }
+}
+
+/* Score toast */
+.score-toast {
+  position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:rgba(10,0,14,0.85);
+  border:1px solid rgba(244,114,182,0.3);
+  border-radius:30px;
+  padding:10px 28px;
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-size:1rem;
+  color:var(--rose);
+  z-index:100;
+  opacity:0; pointer-events:none;
+  transition:all 0.4s cubic-bezier(0.34,1.3,0.64,1);
+  white-space:nowrap;
+}
+.score-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── Letters Screen ── */
+#screen-letters { gap:24px; }
+
+.letters-title {
+  font-family:'Cormorant Garamond', serif;
+  font-size:clamp(1.4rem,4vw,2rem);
+  font-style:italic;
+  font-weight:300;
+  color:var(--rose);
+  text-align:center;
+  text-shadow:0 0 30px rgba(244,114,182,0.4);
+}
+.letters-sub {
+  font-size:0.85rem;
+  color:rgba(252,231,243,0.38);
+  letter-spacing:0.1em;
+  text-align:center;
+}
+
+.envelopes-grid {
+  display:flex; flex-wrap:wrap;
+  justify-content:center; gap:14px;
+  max-width:540px; width:100%;
+}
+
+/* Envelope */
+.envelope {
+  width:88px; height:66px;
+  position:relative; cursor:pointer;
+  transition:transform 0.25s cubic-bezier(0.34,1.4,0.64,1);
+}
+.envelope:hover { transform:translateY(-6px) scale(1.06); }
+.envelope.opened { pointer-events:none; }
+
+.env-body {
+  width:100%; height:100%;
+  background:linear-gradient(135deg,rgba(190,24,93,0.35),rgba(131,24,67,0.5));
+  border:1px solid rgba(244,114,182,0.3);
+  border-radius:6px;
+  box-shadow:0 0 18px rgba(244,114,182,0.15);
+  position:relative; overflow:hidden;
+  transition:box-shadow 0.3s;
+}
+.envelope:hover .env-body {
+  box-shadow:0 0 30px rgba(244,114,182,0.35);
+  border-color:rgba(244,114,182,0.6);
+}
+.env-flap {
+  position:absolute; top:0; left:0; width:100%; height:50%;
+  background:linear-gradient(160deg,rgba(236,72,153,0.4),rgba(190,24,93,0.5));
+  clip-path:polygon(0 0, 100% 0, 50% 100%);
+  transition:transform 0.4s ease, opacity 0.4s ease;
+  transform-origin:top center;
+}
+.envelope.opened .env-flap { transform:rotateX(-140deg); opacity:0.3; }
+.env-seal {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-size:1.1rem; z-index:2;
+  transition:transform 0.3s, opacity 0.3s;
+}
+.envelope.opened .env-seal { transform:translate(-50%,-50%) scale(0); opacity:0; }
+.env-num {
+  position:absolute; bottom:5px; right:8px;
+  font-size:0.65rem; color:rgba(244,114,182,0.5);
+  letter-spacing:0.1em;
+}
+
+/* Message pop */
+.msg-pop {
+  position:fixed; z-index:200;
+  pointer-events:none;
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-weight:300;
+  font-size:clamp(1rem,2.8vw,1.25rem);
+  color:var(--cream);
+  text-shadow:0 0 20px rgba(244,114,182,0.7);
+  text-align:center;
+  max-width:300px;
+  background:rgba(6,0,10,0.82);
+  border:1px solid rgba(244,114,182,0.25);
+  border-radius:16px;
+  padding:18px 24px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 0 40px rgba(244,114,182,0.15);
+  transform:scale(0.8) translateY(10px);
+  opacity:0;
+  transition:transform 0.4s cubic-bezier(0.34,1.4,0.64,1), opacity 0.4s ease;
+}
+.msg-pop.show { transform:scale(1) translateY(0); opacity:1; pointer-events:auto; }
+.msg-pop-icon { font-size:1.4rem; display:block; margin-bottom:8px; }
+
+/* Puff away */
+@keyframes puff-away {
+  0%   { transform:scale(1); opacity:1; filter:blur(0); }
+  100% { transform:scale(2.5); opacity:0; filter:blur(8px); }
+}
+.msg-pop.puff { animation:puff-away 0.5s ease forwards; }
+
+/* Letters count */
+.letters-count {
+  font-size:0.8rem;
+  color:rgba(252,231,243,0.35);
+  letter-spacing:0.1em;
+}
+
+/* ── Final Garden Screen ── */
+#screen-garden { flex-direction:column; justify-content:flex-end; gap:0; padding:0; }
+
+#final-garden-svg {
+  position:absolute; bottom:0; width:100%; max-width:960px;
+  left:50%; transform:translateX(-50%);
+  height:75vh;
+}
+
+.final-message {
+  position:absolute;
+  top:50%; left:50%; transform:translate(-50%,-60%);
+  text-align:center; z-index:20;
+  opacity:0; pointer-events:none;
+  transition:opacity 1.2s ease;
+}
+.final-message.show { opacity:1; }
+.final-msg-big {
+  font-family:'Cormorant Garamond', serif;
+  font-size:clamp(1.8rem,5vw,3rem);
+  font-style:italic;
+  font-weight:300;
+  color:var(--rose);
+  text-shadow:0 0 40px rgba(244,114,182,0.7),0 0 80px rgba(244,114,182,0.3);
+  line-height:1.3;
+}
+.final-msg-small {
+  margin-top:10px;
+  font-size:1.1rem;
+  color:rgba(252,231,243,0.55);
+  letter-spacing:0.06em;
+}
+
+/* Falling petals */
+.petal-fall {
+  position:fixed; pointer-events:none; z-index:3; font-size:1rem;
+  animation: petal-drop var(--fdur) linear infinite; opacity:0;
+}
+@keyframes petal-drop {
+  0%   { transform:translateY(-30px) rotate(0deg); opacity:0; }
+  10%  { opacity:0.6; }
+  90%  { opacity:0.3; }
+  100% { transform:translateY(110vh) rotate(600deg); opacity:0; }
+}
+
+/* Ambient particles */
+.particle {
+  position:absolute; border-radius:50%; pointer-events:none;
+  animation: float-p var(--dur) ease-in-out infinite alternate; opacity:0;
+}
+@keyframes float-p {
+  0%   { transform:translateY(0); opacity:var(--op); }
+  100% { transform:translateY(-18px); opacity:calc(var(--op)*0.3); }
+}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="ambient"></div>
+
+<!-- ── Screen 1: Start ── -->
+<div class="screen active" id="screen-start">
+  <div class="title-main">ein kleines spiel<br>für dich 🌸</div>
+  <div class="title-sub">quiz · liebesbriefe · blumen</div>
+  <button class="start-btn" onclick="startQuiz()">los geht's</button>
+</div>
+
+<!-- ── Screen 2: Quiz ── -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-wrap">
+    <div class="progress-bar-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">1 / 7</div>
+    </div>
+    <div class="q-card" id="q-card">
+      <div class="q-number" id="q-number">Frage 1</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Screen 3: Letters ── -->
+<div class="screen" id="screen-letters">
+  <div class="letters-title">kleine Briefe für dich</div>
+  <div class="letters-sub">klick jeden auf — dann verschwinden sie</div>
+  <div class="envelopes-grid" id="envelopes-grid"></div>
+  <div class="letters-count" id="letters-count">7 Briefe warten</div>
+</div>
+
+<!-- Message popup -->
+<div class="msg-pop" id="msg-pop">
+  <span class="msg-pop-icon" id="msg-pop-icon"></span>
+  <span id="msg-pop-text"></span>
+</div>
+
+<!-- ── Screen 4: Final Garden ── -->
+<div class="screen" id="screen-garden">
+  <svg id="final-garden-svg" viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet"></svg>
+  <div class="final-message" id="final-message">
+    <div class="final-msg-big">Ich liebe dich ♥</div>
+    <div class="final-msg-small">für immer dein Mausi Pupsi</div>
+  </div>
+</div>
+
+<!-- Score toast -->
+<div class="score-toast" id="score-toast"></div>
+
+<script>
+// ── Stars ────────────────────────────────────────────────
+const starsEl = document.getElementById('stars');
+for(let i=0;i<120;i++){
+  const s=document.createElement('div'); s.className='star';
+  const sz=Math.random()*2.5+0.4;
+  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*3+1.5).toFixed(1)}s;--op:${(Math.random()*0.6+0.1).toFixed(2)};animation-delay:${(Math.random()*5).toFixed(1)}s;`;
+  starsEl.appendChild(s);
+}
+
+// ── Quiz data ─────────────────────────────────────────────
+const questions = [
+  {
+    q: "Wo haben wir uns zum ersten Mal alleine getroffen?",
+    answers: [
+      "Abends zu Fuß in der Aarauerstrasse",
+      "Im Café um die Ecke",
+      "Im Park bei Sonnenschein",
+      "In der Bib nach der Schule"
+    ],
+    correct: 0,
+    ok: "genau da hat alles angefangen 🌙",
+    bad: "das weißt du doch noch, oder? 🥺"
+  },
+  {
+    q: "Was ist mein Lieblingsessen?",
+    answers: [
+      "Pizza und Pasta",
+      "Maultaschen und Sushi",
+      "Burger und Pommes",
+      "Döner und Salat"
+    ],
+    correct: 1,
+    ok: "Maultaschen + Sushi = perfekte Kombination ✨",
+    bad: "ich dachte du kennst mich schon 😅"
+  },
+  {
+    q: "Welche Farben trage ich am meisten?",
+    answers: [
+      "Schwarz und Weiß",
+      "Blau und Grau",
+      "Beige und Schwarz",
+      "Grün und Braun"
+    ],
+    correct: 2,
+    ok: "beige & schwarz — meine Lieblingskombi 🖤",
+    bad: "schau mal in meinen Kleiderschrank 😄"
+  },
+  {
+    q: "Was passiert mit mir wenn ich nervös bin?",
+    answers: [
+      "Ich werde ganz still",
+      "Ich bekomme Magenschmerzen",
+      "Ich fange an zu lachen",
+      "Ich rede sehr viel"
+    ],
+    correct: 1,
+    ok: "du kennst mich zu gut 🥺",
+    bad: "kleiner Hinweis: es kommt aus dem Bauch 😬"
+  },
+  {
+    q: "Was ist meine Lieblingsfarbe?",
+    answers: [
+      "Himmelblau",
+      "Mintgrün",
+      "Lila",
+      "Koralle"
+    ],
+    correct: 2,
+    ok: "lila — so wie du bist: besonders 💜",
+    bad: "denk nochmal nach... 💜"
+  },
+  {
+    q: "Was denke ich gerade?",
+    answers: [
+      "Was ich heute essen soll",
+      "Ob es morgen regnet",
+      "Dass ich dich liebe",
+      "An den nächsten Urlaub"
+    ],
+    correct: 2,
+    ok: "immer 🌸",
+    bad: "die Antwort ist immer dieselbe 🌸"
+  },
+  {
+    q: "Wer ist mein absolutes Lieblings-Mausi-Pupsi-Dupsi-Schatzi-Knuffi-Lieblings-Schatzimaus?",
+    answers: [
+      "Du",
+      "Antwort A",
+      "Antwort B",
+      "Alle drei (= du)"
+    ],
+    correct: 0,
+    ok: "du du du — immer nur du 🥰",
+    bad: "es ist Antwort A! also: DU 😂"
+  }
+];
+
+let currentQ = 0;
+let score = 0;
+let answering = false;
+
+// ── Screen manager ────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active');
+  });
+  const s = document.getElementById(id);
+  s.classList.add('active');
+}
+
+// ── Start quiz ────────────────────────────────────────────
+function startQuiz() {
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const total = questions.length;
+
+  document.getElementById('progress-fill').style.width = `${(currentQ/total)*100}%`;
+  document.getElementById('progress-label').textContent = `${currentQ+1} / ${total}`;
+  document.getElementById('q-number').textContent = `Frage ${currentQ+1}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+
+  const answersEl = document.getElementById('answers');
+  answersEl.innerHTML = '';
+  q.answers.forEach((a,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.textContent = a;
+    btn.onclick = () => handleAnswer(i, btn);
+    answersEl.appendChild(btn);
+  });
+
+  // Animate in
+  const card = document.getElementById('q-card');
+  card.classList.add('enter');
+  setTimeout(()=>card.classList.remove('enter'),50);
+}
+
+function handleAnswer(idx, btn) {
+  if(answering) return;
+  answering = true;
+
+  const q = questions[currentQ];
+  const allBtns = document.querySelectorAll('.ans-btn');
+  const fb = document.getElementById('feedback');
+
+  allBtns.forEach(b=>b.style.pointerEvents='none');
+
+  if(idx === q.correct) {
+    btn.classList.add('correct');
+    score++;
+    fb.textContent = q.ok;
+    fb.className = 'feedback show ok';
+    spawnBloom(btn);
+  } else {
+    btn.classList.add('wrong');
+    allBtns[q.correct].classList.add('correct');
+    fb.textContent = q.bad;
+    fb.className = 'feedback show bad';
+  }
+
+  setTimeout(()=>{
+    answering = false;
+    nextQuestion();
+  }, 1400);
+}
+
+function nextQuestion() {
+  currentQ++;
+  const card = document.getElementById('q-card');
+
+  if(currentQ >= questions.length) {
+    // fill progress to 100%
+    document.getElementById('progress-fill').style.width = '100%';
+    card.classList.add('exit-left');
+    setTimeout(()=>{
+      showScoreAndProceed();
+    },500);
+    return;
+  }
+
+  card.classList.add('exit-left');
+  setTimeout(()=>{
+    card.classList.remove('exit-left');
+    renderQuestion();
+  },400);
+}
+
+function showScoreAndProceed() {
+  const toast = document.getElementById('score-toast');
+  const msgs = ['fast alles gewusst! 🌸','du kennst mich so gut 🥰','perfekt — du kennst mein Herz 💕'];
+  const msg = score >= 6 ? msgs[2] : score >= 4 ? msgs[1] : msgs[0];
+  toast.textContent = `${score} / ${questions.length} richtig — ${msg}`;
+  toast.classList.add('show');
+  setTimeout(()=>{
+    toast.classList.remove('show');
+    setTimeout(()=>startLetters(), 600);
+  }, 2800);
+}
+
+function spawnBloom(btn) {
+  const rect = btn.getBoundingClientRect();
+  const emojis = ['🌸','🌺','✿','💕','🌷'];
+  for(let i=0;i<4;i++){
+    const b = document.createElement('div');
+    b.className = 'bloom-burst';
+    b.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    b.style.cssText = `left:${rect.left+Math.random()*rect.width}px;top:${rect.top}px;animation-delay:${i*0.1}s;font-size:${1.2+Math.random()*0.8}rem;`;
+    document.body.appendChild(b);
+    setTimeout(()=>b.remove(), 1400);
+  }
+}
+
+// ── Letters ───────────────────────────────────────────────
+const letters = [
+  { icon:'🌸', text:'Du machst jeden Tag ein bisschen heller.' },
+  { icon:'✨', text:'Ich bin so froh, dass das Universum dich in meinen Weg gestellt hat.' },
+  { icon:'🥺', text:'Wenn ich aufgeregt bin, will ich es als erstes dir erzählen.' },
+  { icon:'💬', text:'Dein Lachen ist mein Lieblingsgeräusch auf der ganzen Welt.' },
+  { icon:'🌙', text:'Ich denke an dich, bevor ich einschlafe — jede Nacht.' },
+  { icon:'💪', text:'Du schaffst deine Prüfungen. Ich glaube an dich — wirklich und ganz.' },
+  { icon:'❤️', text:'Ich liebe dich mehr als Worte es je könnten.' },
+];
+
+let openedCount = 0;
+let activeMsg = null;
+
+function startLetters() {
+  showScreen('screen-letters');
+  spawnFallingPetals();
+  const grid = document.getElementById('envelopes-grid');
+  grid.innerHTML = '';
+
+  letters.forEach((l,i)=>{
+    const env = document.createElement('div');
+    env.className = 'envelope';
+    env.innerHTML = `
+      <div class="env-body">
+        <div class="env-flap"></div>
+        <div class="env-seal">${l.icon}</div>
+        <div class="env-num">${i+1}</div>
+      </div>`;
+    env.style.cssText = `opacity:0; transform:translateY(20px); transition: opacity 0.5s ease ${i*0.1}s, transform 0.5s ease ${i*0.1}s;`;
+    env.onclick = () => openLetter(env, l, i);
+    grid.appendChild(env);
+    setTimeout(()=>{
+      env.style.opacity='1'; env.style.transform='translateY(0)';
+    }, 50);
+  });
+}
+
+function openLetter(envEl, letter, idx) {
+  if(envEl.classList.contains('opened')) return;
+  envEl.classList.add('opened');
+
+  // Close previous popup if open
+  if(activeMsg) dismissMsg(true);
+
+  const rect = envEl.getBoundingClientRect();
+  const popup = document.getElementById('msg-pop');
+  document.getElementById('msg-pop-icon').textContent = letter.icon;
+  document.getElementById('msg-pop-text').textContent = letter.text;
+
+  // Position popup above envelope
+  const pw = Math.min(300, window.innerWidth - 32);
+  let left = rect.left + rect.width/2 - pw/2;
+  left = Math.max(16, Math.min(left, window.innerWidth - pw - 16));
+  const top = Math.max(20, rect.top - 140);
+
+  popup.style.left = left+'px';
+  popup.style.top = top+'px';
+  popup.style.width = pw+'px';
+  popup.classList.remove('puff');
+  popup.classList.add('show');
+  activeMsg = popup;
+
+  popup.onclick = () => dismissMsg(false, envEl);
+
+  openedCount++;
+  const remaining = letters.length - openedCount;
+  const countEl = document.getElementById('letters-count');
+  countEl.textContent = remaining > 0 ? `noch ${remaining} Brief${remaining===1?'':'e'}` : 'alle geöffnet 🌸';
+
+  if(openedCount === letters.length) {
+    setTimeout(()=>{
+      dismissMsg(true);
+      setTimeout(showFinalGarden, 800);
+    }, 2200);
+  }
+}
+
+function dismissMsg(immediate, envEl) {
+  const popup = document.getElementById('msg-pop');
+  if(immediate){
+    popup.classList.remove('show');
+  } else {
+    popup.classList.add('puff');
+    setTimeout(()=>{ popup.classList.remove('show','puff'); },500);
+    // Sprout mini flower from envelope
+    if(envEl){
+      const rect = envEl.getBoundingClientRect();
+      spawnMiniFlower(rect.left+rect.width/2, rect.top+rect.height/2);
+    }
+  }
+  activeMsg = null;
+}
+
+function spawnMiniFlower(x,y) {
+  const b = document.createElement('div');
+  b.style.cssText=`position:fixed;left:${x}px;top:${y}px;font-size:1.8rem;z-index:300;pointer-events:none;animation:burst-up 1.4s ease forwards;`;
+  b.textContent='🌸';
+  document.body.appendChild(b);
+  setTimeout(()=>b.remove(),1500);
+}
+
+// ── Final Garden ──────────────────────────────────────────
+const NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag,a={}){
+  const e=document.createElementNS(NS,tag);
+  for(const[k,v] of Object.entries(a)) e.setAttribute(k,v);
+  return e;
+}
+
+function showFinalGarden(){
+  showScreen('screen-garden');
+  const svg = document.getElementById('final-garden-svg');
+  buildFinalGarden(svg);
+  setTimeout(()=>{
+    document.getElementById('final-message').classList.add('show');
+  }, 4000);
+}
+
+function buildFinalGarden(svg){
+  const defs=svgEl('defs');
+
+  [
+    {id:'gf-pink',col:'#f472b6',dev:10},
+    {id:'gf-rose',col:'#fda4af',dev:8},
+    {id:'gf-teal',col:'#2dd4bf',dev:8},
+    {id:'gf-green',col:'#22c55e',dev:6},
+    {id:'gf-gold',col:'#fbbf24',dev:9},
+  ].forEach(({id,col,dev})=>{
+    const f=svgEl('filter',{id,x:'-60%',y:'-60%',width:'220%',height:'220%'});
+    const b=svgEl('feGaussianBlur',{in:'SourceGraphic',stdDeviation:dev,result:'blur'});
+    const fl=svgEl('feFlood',{'flood-color':col,'flood-opacity':'0.85',result:'c'});
+    const co=svgEl('feComposite',{in:'c',in2:'blur',operator:'in',result:'g'});
+    const m=svgEl('feMerge');
+    m.appendChild(svgEl('feMergeNode',{in:'g'}));
+    m.appendChild(svgEl('feMergeNode',{in:'SourceGraphic'}));
+    [b,fl,co,m].forEach(n=>f.appendChild(n));
+    defs.appendChild(f);
+  });
+
+  const rad=(id,c1,c2,c3)=>{
+    const g=svgEl('radialGradient',{id,cx:'50%',cy:'40%',r:'65%'});
+    [[0,c1],[50,c2],[100,c3]].forEach(([off,col])=>g.appendChild(svgEl('stop',{offset:`${off}%`,'stop-color':col})));
+    defs.appendChild(g);
+  };
+  rad('fp-outer','#fce7f3','#f9a8d4','#ec4899');
+  rad('fp-mid','#fda4af','#f472b6','#db2777');
+  rad('fp-inner','#fbcfe8','#f9a8d4','#f472b6');
+  rad('fp-ctr','#fff7ed','#fef08a','#fbbf24');
+  rad('fl-teal','#a5f3fc','#2dd4bf','#0891b2');
+  rad('fl-green','#4ade80','#16a34a','#14532d');
+  const sg=svgEl('linearGradient',{id:'fs-g',x1:'0',y1:'0',x2:'1',y2:'0'});
+  [['0%','#15803d'],['50%','#4ade80'],['100%','#15803d']].forEach(([o,c])=>sg.appendChild(svgEl('stop',{offset:o,'stop-color':c})));
+  defs.appendChild(sg);
+  svg.appendChild(defs);
+
+  const baseY=615;
+
+  // Grass
+  [
+    [55,115,-18,'#15803d'],[78,98,10,'#166534'],[125,135,-12,'#15803d'],
+    [152,85,14,'#14532d'],[710,105,12,'#15803d'],[738,122,-9,'#166534'],
+    [805,92,16,'#15803d'],[828,108,-13,'#14532d'],[195,72,6,'#166534'],
+    [660,78,-6,'#166534'],[435,68,9,'#15803d'],[462,83,-7,'#14532d'],
+  ].forEach(([x,h,lean,col])=>{
+    const g=svgEl('g');
+    const blade=svgEl('path',{d:`M${x},${baseY} Q${x+lean},${baseY-h*0.55} ${x+lean*2},${baseY-h}`,stroke:col,'stroke-width':'2.5','stroke-linecap':'round',fill:'none',filter:'url(#gf-green)','stroke-dasharray':h*1.3,'stroke-dashoffset':h*1.3});
+    g.appendChild(blade); svg.appendChild(g);
+    setTimeout(()=>{
+      blade.style.transition=`stroke-dashoffset 750ms cubic-bezier(0.25,0.46,0.45,0.94)`;
+      blade.setAttribute('stroke-dashoffset','0');
+    }, 300+Math.random()*600);
+  });
+
+  // Plants
+  [
+    {x:355,h:295,r:40,w:8,side:-1,lc:3,d:600},
+    {x:435,h:330,r:46,w:9,side:1,lc:3,d:750},
+    {x:505,h:268,r:36,w:7,side:-1,lc:2,d:900},
+    {x:298,h:212,r:31,w:6,side:1,lc:2,d:1000},
+    {x:575,h:202,r:29,w:5,side:-1,lc:2,d:1050},
+  ].forEach(({x,h,r,w,side,lc,d})=>{
+    // stem
+    const sg2=svgEl('g');
+    const cx=x+(Math.random()-0.5)*16;
+    const stem=svgEl('path',{d:`M${x},${baseY} Q${cx},${baseY-h*0.5} ${x},${baseY-h}`,stroke:'url(#fs-g)','stroke-width':w,'stroke-linecap':'round',fill:'none',filter:'url(#gf-green)','stroke-dasharray':h*1.5,'stroke-dashoffset':h*1.5});
+    sg2.appendChild(stem); svg.appendChild(sg2);
+    setTimeout(()=>{
+      stem.style.transition=`stroke-dashoffset ${700+h}ms cubic-bezier(0.25,0.46,0.45,0.94)`;
+      stem.setAttribute('stroke-dashoffset','0');
+    },d);
+
+    // leaves
+    for(let li=0;li<lc;li++){
+      const lx=x+side*8, ly=baseY-h*(0.3+li*0.28);
+      const lang=side*(38+li*12);
+      const lg=svgEl('g',{transform:`translate(${lx},${ly}) rotate(${lang}) scale(${1+li*0.08})`});
+      const lp=svgEl('path',{d:'M0,0 C12,-22 36,-28 22,-6 C36,-22 28,12 0,0 Z',fill:'url(#fl-teal)',filter:'url(#gf-teal)',opacity:'0'});
+      lg.appendChild(lp); svg.appendChild(lg);
+      setTimeout(()=>{ lp.style.transition='opacity 0.75s ease'; lp.setAttribute('opacity','1'); }, d+500+li*220);
+    }
+
+    // peony
+    const flower=makeSvgPeony(x,baseY-h-2,r);
+    svg.appendChild(flower);
+    setTimeout(()=>{
+      flower.setAttribute('opacity','1');
+      let s=0.05,v=0;
+      const tf=`translate(${x},${baseY-h-2})`;
+      const tick=()=>{
+        v+=(1-s)*0.15;v*=0.72;s+=v;
+        flower.setAttribute('transform',`${tf} scale(${s.toFixed(4)})`);
+        if(Math.abs(1-s)>0.002||Math.abs(v)>0.001) requestAnimationFrame(tick);
+        else flower.setAttribute('transform',tf);
+      };
+      requestAnimationFrame(tick);
+    }, d+950+h*0.4);
+  });
+
+  // big teal leaves
+  [
+    {x:242,y:baseY-128,ang:-32,s:2.6,gr:'url(#fl-teal)',gl:'url(#gf-teal)'},
+    {x:272,y:baseY-84,ang:-55,s:2.3,gr:'url(#fl-teal)',gl:'url(#gf-teal)'},
+    {x:602,y:baseY-108,ang:32,s:2.5,gr:'url(#fl-teal)',gl:'url(#gf-teal)'},
+    {x:570,y:baseY-70,ang:52,s:2.1,gr:'url(#fl-teal)',gl:'url(#gf-teal)'},
+    {x:385,y:baseY-64,ang:-22,s:2.0,gr:'url(#fl-green)',gl:'url(#gf-green)'},
+    {x:460,y:baseY-54,ang:26,s:2.0,gr:'url(#fl-green)',gl:'url(#gf-green)'},
+  ].forEach(({x,y,ang,s,gr,gl},ti)=>{
+    const lg=svgEl('g',{transform:`translate(${x},${y}) rotate(${ang}) scale(${s})`});
+    const lp=svgEl('path',{d:'M0,0 C12,-22 36,-28 22,-6 C36,-22 28,12 0,0 Z',fill:gr,filter:gl,opacity:'0'});
+    lg.appendChild(lp); svg.appendChild(lg);
+    setTimeout(()=>{ lp.style.transition='opacity 0.75s ease'; lp.setAttribute('opacity','1'); }, 1200+ti*150);
+  });
+
+  // floating particles on garden screen
+  setTimeout(()=>spawnGardenParticles(),400);
+}
+
+function makeSvgPeony(cx,cy,r){
+  const g=svgEl('g',{transform:`translate(${cx},${cy})`,opacity:'0'});
+  // Layer 1 – 6 outer
+  for(let i=0;i<6;i++){
+    const pg=svgEl('g',{transform:`rotate(${i*60})`});
+    pg.appendChild(svgEl('path',{d:`M0,0 C${-r*0.32},${-r*0.38} ${-r*0.28},${-r*0.92} 0,${-r} C${r*0.28},${-r*0.92} ${r*0.32},${-r*0.38} 0,0 Z`,fill:'url(#fp-outer)',filter:'url(#gf-pink)',opacity:'0.88'}));
+    g.appendChild(pg);
+  }
+  // Layer 2 – 6 mid
+  for(let i=0;i<6;i++){
+    const r2=r*0.76,pg=svgEl('g',{transform:`rotate(${i*60+30})`});
+    pg.appendChild(svgEl('path',{d:`M0,0 C${-r2*0.28},${-r2*0.36} ${-r2*0.22},${-r2*0.90} 0,${-r2} C${r2*0.22},${-r2*0.90} ${r2*0.28},${-r2*0.36} 0,0 Z`,fill:'url(#fp-mid)',filter:'url(#gf-pink)',opacity:'0.92'}));
+    g.appendChild(pg);
+  }
+  // Layer 3 – 7 inner
+  for(let i=0;i<7;i++){
+    const r3=r*0.52,pg=svgEl('g',{transform:`rotate(${i*(360/7)+8})`});
+    pg.appendChild(svgEl('path',{d:`M0,0 C${-r3*0.24},${-r3*0.34} ${-r3*0.18},${-r3*0.87} 0,${-r3} C${r3*0.18},${-r3*0.87} ${r3*0.24},${-r3*0.34} 0,0 Z`,fill:'url(#fp-inner)',filter:'url(#gf-rose)',opacity:'0.96'}));
+    g.appendChild(pg);
+  }
+  // Layer 4 – tiny ruffles
+  for(let i=0;i<10;i++){
+    const r4=r*0.28,pg=svgEl('g',{transform:`rotate(${i*36})`});
+    pg.appendChild(svgEl('ellipse',{cx:0,cy:-r4,rx:r4*0.26,ry:r4*0.42,fill:'url(#fp-inner)',opacity:'0.9'}));
+    g.appendChild(pg);
+  }
+  // Center
+  g.appendChild(svgEl('circle',{cx:0,cy:0,r:r*0.18,fill:'url(#fp-ctr)',filter:'url(#gf-gold)',opacity:'0.95'}));
+  for(let i=0;i<8;i++){
+    const a=i*45,r5=r*0.22;
+    g.appendChild(svgEl('circle',{cx:Math.cos(a*Math.PI/180)*r5,cy:Math.sin(a*Math.PI/180)*r5,r:r*0.04,fill:'#fbbf24',opacity:'0.8'}));
+  }
+  return g;
+}
+
+function spawnGardenParticles(){
+  ['#f472b6','#fda4af','#2dd4bf','#4ade80','#fbbf24'].forEach(c=>{
+    for(let i=0;i<5;i++){
+      const p=document.createElement('div'); p.className='particle';
+      const sz=Math.random()*5+2;
+      p.style.cssText=`width:${sz}px;height:${sz}px;background:${c};box-shadow:0 0 ${sz*3}px ${c};position:fixed;left:${10+Math.random()*80}%;top:${5+Math.random()*80}%;--dur:${(Math.random()*3+2).toFixed(1)}s;--op:${(Math.random()*0.5+0.15).toFixed(2)};animation-delay:${(Math.random()*3).toFixed(1)}s;`;
+      document.body.appendChild(p);
+    }
+  });
+}
+
+function spawnFallingPetals(){
+  ['🌸','✿','❀','🌷'].forEach(sym=>{
+    for(let j=0;j<4;j++){
+      const p=document.createElement('div'); p.className='petal-fall';
+      p.textContent=sym;
+      p.style.cssText=`left:${5+Math.random()*90}%;--fdur:${(7+Math.random()*9).toFixed(1)}s;animation-delay:${(Math.random()*10).toFixed(1)}s;`;
+      document.body.appendChild(p);
+    }
+  });
+}
+</script>
+</body>
+</html>
