@@ -3,986 +3,1256 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>für dich 🌸</title>
+<title>eine Geschichte 🌼</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,600&family=Crimson+Pro:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,400&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
 
-:root {
-  --bg: #06000a;
-  --pink: #f472b6;
-  --pink2: #ec4899;
-  --rose: #fda4af;
-  --cream: #fce7f3;
-  --teal: #2dd4bf;
-  --green: #16a34a;
-  --gold: #fbbf24;
+body{
+  background:#04020a;
+  min-height:100vh;
+  overflow:hidden;
+  font-family:'Cormorant Garamond',serif;
+  color:#fce7f3;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-  background: var(--bg);
-  min-height: 100vh;
-  overflow: hidden;
-  font-family: 'Crimson Pro', serif;
-  color: var(--cream);
-  cursor: default;
+canvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:1;
 }
 
-/* ── Stars ── */
-.stars { position:fixed; inset:0; pointer-events:none; z-index:0; }
-.star {
-  position:absolute; border-radius:50%; background:white;
-  animation: twinkle var(--d) ease-in-out infinite alternate;
-  opacity:0;
-}
-@keyframes twinkle {
-  0%   { opacity:0; }
-  100% { opacity:var(--op); }
+#ui{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
 }
 
-/* ── Ambient ── */
-.ambient {
-  position:fixed; inset:0; pointer-events:none; z-index:0;
-  background: radial-gradient(ellipse 70% 45% at 50% 100%, rgba(236,72,153,0.1) 0%, transparent 70%);
-}
-
-/* ── Screens ── */
-.screen {
-  position:fixed; inset:0;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  z-index:10; padding:24px;
-  opacity:0; pointer-events:none;
-  transition: opacity 0.6s ease;
-}
-.screen.active { opacity:1; pointer-events:auto; }
-
-/* ── Start Screen ── */
-#screen-start { gap:20px; }
-.title-main {
-  font-family:'Cormorant Garamond', serif;
-  font-size:clamp(2rem,6vw,3.2rem);
-  font-style:italic;
-  font-weight:300;
-  color:var(--rose);
-  text-shadow: 0 0 40px rgba(244,114,182,0.5);
-  text-align:center;
-  line-height:1.2;
-}
-.title-sub {
-  font-size:1rem;
-  color:rgba(252,231,243,0.5);
-  letter-spacing:0.12em;
-  text-align:center;
-}
-.start-btn {
-  margin-top:16px;
-  padding:16px 48px;
+#start-btn{
+  pointer-events:auto;
+  padding:18px 52px;
   background:transparent;
-  border:1.5px solid rgba(244,114,182,0.5);
-  color:var(--cream);
-  font-family:'Cormorant Garamond', serif;
-  font-size:1.2rem;
+  border:1.5px solid rgba(255,220,100,0.45);
+  color:rgba(255,240,200,0.9);
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.25rem;
   font-style:italic;
-  letter-spacing:0.08em;
+  letter-spacing:0.1em;
   border-radius:50px;
   cursor:pointer;
   transition:all 0.3s;
-  animation: pulse-glow 3s ease-in-out infinite;
+  animation:btn-glow 3s ease-in-out infinite;
 }
-.start-btn:hover {
-  background:rgba(244,114,182,0.1);
-  border-color:var(--pink);
-  box-shadow:0 0 40px rgba(244,114,182,0.4);
-  transform:scale(1.04);
+#start-btn:hover{
+  background:rgba(255,220,100,0.08);
+  border-color:rgba(255,220,100,0.85);
+  box-shadow:0 0 36px rgba(255,210,80,0.3);
+  transform:scale(1.05);
 }
-@keyframes pulse-glow {
-  0%,100% { box-shadow:0 0 18px rgba(244,114,182,0.15); }
-  50%      { box-shadow:0 0 35px rgba(244,114,182,0.35); }
+@keyframes btn-glow{
+  0%,100%{box-shadow:0 0 14px rgba(255,210,80,0.1);}
+  50%{box-shadow:0 0 30px rgba(255,210,80,0.28);}
 }
+#start-btn.fade-out{
+  animation:btn-fade 0.5s ease forwards;
+  pointer-events:none;
+}
+@keyframes btn-fade{to{opacity:0;transform:scale(0.8);}}
 
-/* ── Quiz Screen ── */
-#screen-quiz { gap:0; justify-content:center; }
-
-.quiz-wrap {
-  width:100%; max-width:560px;
-  display:flex; flex-direction:column; gap:0;
-}
-
-/* Progress */
-.progress-bar-wrap {
-  display:flex; align-items:center; gap:12px;
-  margin-bottom:28px;
-}
-.progress-track {
-  flex:1; height:3px;
-  background:rgba(244,114,182,0.15);
-  border-radius:2px; overflow:hidden;
-}
-.progress-fill {
-  height:100%; background:linear-gradient(to right,var(--pink2),var(--rose));
-  border-radius:2px;
-  transition:width 0.5s cubic-bezier(0.34,1.3,0.64,1);
-  box-shadow:0 0 8px rgba(244,114,182,0.6);
-}
-.progress-label {
-  font-size:0.78rem;
-  color:rgba(252,231,243,0.4);
-  letter-spacing:0.1em;
-  white-space:nowrap;
-}
-
-/* Question card */
-.q-card {
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(244,114,182,0.12);
-  border-radius:20px;
-  padding:32px 36px 28px;
-  backdrop-filter:blur(16px);
-  box-shadow:0 0 60px rgba(244,114,182,0.06);
-  transition: transform 0.4s ease, opacity 0.4s ease;
-}
-.q-card.exit-left  { transform:translateX(-60px); opacity:0; }
-.q-card.exit-right { transform:translateX(60px);  opacity:0; }
-.q-card.enter      { transform:translateY(20px);   opacity:0; }
-
-.q-number {
-  font-size:0.72rem;
-  letter-spacing:0.18em;
-  color:rgba(244,114,182,0.5);
-  margin-bottom:12px;
-  text-transform:uppercase;
-}
-.q-text {
-  font-family:'Cormorant Garamond', serif;
-  font-size:clamp(1.2rem,3.5vw,1.6rem);
-  font-style:italic;
-  font-weight:300;
-  color:var(--cream);
-  line-height:1.4;
-  margin-bottom:26px;
-}
-
-/* Answer options */
-.answers { display:flex; flex-direction:column; gap:10px; }
-.ans-btn {
-  padding:13px 20px;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(244,114,182,0.18);
-  border-radius:12px;
-  color:rgba(252,231,243,0.8);
-  font-family:'Crimson Pro', serif;
-  font-size:1rem;
-  letter-spacing:0.02em;
-  cursor:pointer;
-  text-align:left;
-  transition:all 0.22s ease;
-  position:relative;
-  overflow:hidden;
-}
-.ans-btn::before {
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(244,114,182,0.08),transparent);
-  opacity:0; transition:opacity 0.2s;
-}
-.ans-btn:hover { border-color:rgba(244,114,182,0.5); color:var(--cream); transform:translateX(4px); }
-.ans-btn:hover::before { opacity:1; }
-.ans-btn.correct {
-  border-color:#4ade80;
-  background:rgba(74,222,128,0.08);
-  color:#86efac;
-  box-shadow:0 0 20px rgba(74,222,128,0.2);
-  animation: correct-pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
-}
-.ans-btn.wrong {
-  border-color:rgba(239,68,68,0.6);
-  background:rgba(239,68,68,0.06);
-  color:rgba(252,165,165,0.7);
-  animation: shake 0.35s ease;
-}
-@keyframes correct-pop {
-  0%   { transform:scale(1); }
-  50%  { transform:scale(1.03); }
-  100% { transform:scale(1); }
-}
-@keyframes shake {
-  0%,100% { transform:translateX(0); }
-  25%      { transform:translateX(-6px); }
-  75%      { transform:translateX(6px); }
-}
-
-/* Feedback */
-.feedback {
-  margin-top:14px; min-height:28px;
-  font-family:'Cormorant Garamond', serif;
+#caption{
+  position:fixed;
+  bottom:32px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:25;
   font-size:1.05rem;
   font-style:italic;
+  letter-spacing:0.06em;
+  color:rgba(255,240,220,0.7);
   text-align:center;
-  opacity:0; transition:opacity 0.3s;
-}
-.feedback.show { opacity:1; }
-.feedback.ok  { color:#86efac; text-shadow:0 0 12px rgba(74,222,128,0.5); }
-.feedback.bad { color:#fca5a5; }
-
-/* Bloom burst (mini flowers per correct answer) */
-.bloom-burst {
-  position:fixed; pointer-events:none; z-index:50;
-  font-size:1.6rem;
-  animation: burst-up 1.2s ease forwards;
-}
-@keyframes burst-up {
-  0%   { transform:translateY(0) scale(0.5) rotate(-20deg); opacity:1; }
-  100% { transform:translateY(-120px) scale(1.2) rotate(20deg); opacity:0; }
-}
-
-/* Score toast */
-.score-toast {
-  position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px);
-  background:rgba(10,0,14,0.85);
-  border:1px solid rgba(244,114,182,0.3);
-  border-radius:30px;
-  padding:10px 28px;
-  font-family:'Cormorant Garamond', serif;
-  font-style:italic;
-  font-size:1rem;
-  color:var(--rose);
-  z-index:100;
-  opacity:0; pointer-events:none;
-  transition:all 0.4s cubic-bezier(0.34,1.3,0.64,1);
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.8s ease;
+  text-shadow:0 0 20px rgba(255,200,100,0.4);
   white-space:nowrap;
 }
-.score-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-/* ── Letters Screen ── */
-#screen-letters { gap:24px; }
-
-.letters-title {
-  font-family:'Cormorant Garamond', serif;
-  font-size:clamp(1.4rem,4vw,2rem);
-  font-style:italic;
-  font-weight:300;
-  color:var(--rose);
-  text-align:center;
-  text-shadow:0 0 30px rgba(244,114,182,0.4);
-}
-.letters-sub {
-  font-size:0.85rem;
-  color:rgba(252,231,243,0.38);
-  letter-spacing:0.1em;
-  text-align:center;
-}
-
-.envelopes-grid {
-  display:flex; flex-wrap:wrap;
-  justify-content:center; gap:14px;
-  max-width:540px; width:100%;
-}
-
-/* Envelope */
-.envelope {
-  width:88px; height:66px;
-  position:relative; cursor:pointer;
-  transition:transform 0.25s cubic-bezier(0.34,1.4,0.64,1);
-}
-.envelope:hover { transform:translateY(-6px) scale(1.06); }
-.envelope.opened { pointer-events:none; }
-
-.env-body {
-  width:100%; height:100%;
-  background:linear-gradient(135deg,rgba(190,24,93,0.35),rgba(131,24,67,0.5));
-  border:1px solid rgba(244,114,182,0.3);
-  border-radius:6px;
-  box-shadow:0 0 18px rgba(244,114,182,0.15);
-  position:relative; overflow:hidden;
-  transition:box-shadow 0.3s;
-}
-.envelope:hover .env-body {
-  box-shadow:0 0 30px rgba(244,114,182,0.35);
-  border-color:rgba(244,114,182,0.6);
-}
-.env-flap {
-  position:absolute; top:0; left:0; width:100%; height:50%;
-  background:linear-gradient(160deg,rgba(236,72,153,0.4),rgba(190,24,93,0.5));
-  clip-path:polygon(0 0, 100% 0, 50% 100%);
-  transition:transform 0.4s ease, opacity 0.4s ease;
-  transform-origin:top center;
-}
-.envelope.opened .env-flap { transform:rotateX(-140deg); opacity:0.3; }
-.env-seal {
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  font-size:1.1rem; z-index:2;
-  transition:transform 0.3s, opacity 0.3s;
-}
-.envelope.opened .env-seal { transform:translate(-50%,-50%) scale(0); opacity:0; }
-.env-num {
-  position:absolute; bottom:5px; right:8px;
-  font-size:0.65rem; color:rgba(244,114,182,0.5);
-  letter-spacing:0.1em;
-}
-
-/* Message pop */
-.msg-pop {
-  position:fixed; z-index:200;
-  pointer-events:none;
-  font-family:'Cormorant Garamond', serif;
-  font-style:italic;
-  font-weight:300;
-  font-size:clamp(1rem,2.8vw,1.25rem);
-  color:var(--cream);
-  text-shadow:0 0 20px rgba(244,114,182,0.7);
-  text-align:center;
-  max-width:300px;
-  background:rgba(6,0,10,0.82);
-  border:1px solid rgba(244,114,182,0.25);
-  border-radius:16px;
-  padding:18px 24px;
-  backdrop-filter:blur(12px);
-  box-shadow:0 0 40px rgba(244,114,182,0.15);
-  transform:scale(0.8) translateY(10px);
-  opacity:0;
-  transition:transform 0.4s cubic-bezier(0.34,1.4,0.64,1), opacity 0.4s ease;
-}
-.msg-pop.show { transform:scale(1) translateY(0); opacity:1; pointer-events:auto; }
-.msg-pop-icon { font-size:1.4rem; display:block; margin-bottom:8px; }
-
-/* Puff away */
-@keyframes puff-away {
-  0%   { transform:scale(1); opacity:1; filter:blur(0); }
-  100% { transform:scale(2.5); opacity:0; filter:blur(8px); }
-}
-.msg-pop.puff { animation:puff-away 0.5s ease forwards; }
-
-/* Letters count */
-.letters-count {
-  font-size:0.8rem;
-  color:rgba(252,231,243,0.35);
-  letter-spacing:0.1em;
-}
-
-/* ── Final Garden Screen ── */
-#screen-garden { flex-direction:column; justify-content:flex-end; gap:0; padding:0; }
-
-#final-garden-svg {
-  position:absolute; bottom:0; width:100%; max-width:960px;
-  left:50%; transform:translateX(-50%);
-  height:75vh;
-}
-
-.final-message {
-  position:absolute;
-  top:50%; left:50%; transform:translate(-50%,-60%);
-  text-align:center; z-index:20;
-  opacity:0; pointer-events:none;
-  transition:opacity 1.2s ease;
-}
-.final-message.show { opacity:1; }
-.final-msg-big {
-  font-family:'Cormorant Garamond', serif;
-  font-size:clamp(1.8rem,5vw,3rem);
-  font-style:italic;
-  font-weight:300;
-  color:var(--rose);
-  text-shadow:0 0 40px rgba(244,114,182,0.7),0 0 80px rgba(244,114,182,0.3);
-  line-height:1.3;
-}
-.final-msg-small {
-  margin-top:10px;
-  font-size:1.1rem;
-  color:rgba(252,231,243,0.55);
-  letter-spacing:0.06em;
-}
-
-/* Falling petals */
-.petal-fall {
-  position:fixed; pointer-events:none; z-index:3; font-size:1rem;
-  animation: petal-drop var(--fdur) linear infinite; opacity:0;
-}
-@keyframes petal-drop {
-  0%   { transform:translateY(-30px) rotate(0deg); opacity:0; }
-  10%  { opacity:0.6; }
-  90%  { opacity:0.3; }
-  100% { transform:translateY(110vh) rotate(600deg); opacity:0; }
-}
-
-/* Ambient particles */
-.particle {
-  position:absolute; border-radius:50%; pointer-events:none;
-  animation: float-p var(--dur) ease-in-out infinite alternate; opacity:0;
-}
-@keyframes float-p {
-  0%   { transform:translateY(0); opacity:var(--op); }
-  100% { transform:translateY(-18px); opacity:calc(var(--op)*0.3); }
-}
+#caption.show{opacity:1;}
 </style>
 </head>
 <body>
-
-<div class="stars" id="stars"></div>
-<div class="ambient"></div>
-
-<!-- ── Screen 1: Start ── -->
-<div class="screen active" id="screen-start">
-  <div class="title-main">ein kleines spiel<br>für dich 🌸</div>
-  <div class="title-sub">quiz · liebesbriefe · blumen</div>
-  <button class="start-btn" onclick="startQuiz()">los geht's</button>
+<canvas id="c"></canvas>
+<div id="ui">
+  <button id="start-btn">die Geschichte beginnt 🌼</button>
 </div>
-
-<!-- ── Screen 2: Quiz ── -->
-<div class="screen" id="screen-quiz">
-  <div class="quiz-wrap">
-    <div class="progress-bar-wrap">
-      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-      <div class="progress-label" id="progress-label">1 / 7</div>
-    </div>
-    <div class="q-card" id="q-card">
-      <div class="q-number" id="q-number">Frage 1</div>
-      <div class="q-text" id="q-text"></div>
-      <div class="answers" id="answers"></div>
-      <div class="feedback" id="feedback"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ── Screen 3: Letters ── -->
-<div class="screen" id="screen-letters">
-  <div class="letters-title">kleine Briefe für dich</div>
-  <div class="letters-sub">klick jeden auf — dann verschwinden sie</div>
-  <div class="envelopes-grid" id="envelopes-grid"></div>
-  <div class="letters-count" id="letters-count">7 Briefe warten</div>
-</div>
-
-<!-- Message popup -->
-<div class="msg-pop" id="msg-pop">
-  <span class="msg-pop-icon" id="msg-pop-icon"></span>
-  <span id="msg-pop-text"></span>
-</div>
-
-<!-- ── Screen 4: Final Garden ── -->
-<div class="screen" id="screen-garden">
-  <svg id="final-garden-svg" viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet"></svg>
-  <div class="final-message" id="final-message">
-    <div class="final-msg-big">Ich liebe dich ♥</div>
-    <div class="final-msg-small">für immer dein Mausi Pupsi</div>
-  </div>
-</div>
-
-<!-- Score toast -->
-<div class="score-toast" id="score-toast"></div>
+<div id="caption" id="cap"></div>
 
 <script>
-// ── Stars ────────────────────────────────────────────────
-const starsEl = document.getElementById('stars');
-for(let i=0;i<120;i++){
-  const s=document.createElement('div'); s.className='star';
-  const sz=Math.random()*2.5+0.4;
-  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*3+1.5).toFixed(1)}s;--op:${(Math.random()*0.6+0.1).toFixed(2)};animation-delay:${(Math.random()*5).toFixed(1)}s;`;
-  starsEl.appendChild(s);
-}
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const cap    = document.getElementById('caption');
 
-// ── Quiz data ─────────────────────────────────────────────
-const questions = [
-  {
-    q: "Wo haben wir uns zum ersten Mal alleine getroffen?",
-    answers: [
-      "Abends zu Fuß in der Aarauerstrasse",
-      "Im Café um die Ecke",
-      "Im Park bei Sonnenschein",
-      "In der Bib nach der Schule"
-    ],
-    correct: 0,
-    ok: "genau da hat alles angefangen 🌙",
-    bad: "das weißt du doch noch, oder? 🥺"
-  },
-  {
-    q: "Was ist mein Lieblingsessen?",
-    answers: [
-      "Pizza und Pasta",
-      "Maultaschen und Sushi",
-      "Burger und Pommes",
-      "Döner und Salat"
-    ],
-    correct: 1,
-    ok: "Maultaschen + Sushi = perfekte Kombination ✨",
-    bad: "ich dachte du kennst mich schon 😅"
-  },
-  {
-    q: "Welche Farben trage ich am meisten?",
-    answers: [
-      "Schwarz und Weiß",
-      "Blau und Grau",
-      "Beige und Schwarz",
-      "Grün und Braun"
-    ],
-    correct: 2,
-    ok: "beige & schwarz — meine Lieblingskombi 🖤",
-    bad: "schau mal in meinen Kleiderschrank 😄"
-  },
-  {
-    q: "Was passiert mit mir wenn ich nervös bin?",
-    answers: [
-      "Ich werde ganz still",
-      "Ich bekomme Magenschmerzen",
-      "Ich fange an zu lachen",
-      "Ich rede sehr viel"
-    ],
-    correct: 1,
-    ok: "du kennst mich zu gut 🥺",
-    bad: "kleiner Hinweis: es kommt aus dem Bauch 😬"
-  },
-  {
-    q: "Was ist meine Lieblingsfarbe?",
-    answers: [
-      "Himmelblau",
-      "Mintgrün",
-      "Lila",
-      "Koralle"
-    ],
-    correct: 2,
-    ok: "lila — so wie du bist: besonders 💜",
-    bad: "denk nochmal nach... 💜"
-  },
-  {
-    q: "Was denke ich gerade?",
-    answers: [
-      "Was ich heute essen soll",
-      "Ob es morgen regnet",
-      "Dass ich dich liebe",
-      "An den nächsten Urlaub"
-    ],
-    correct: 2,
-    ok: "immer 🌸",
-    bad: "die Antwort ist immer dieselbe 🌸"
-  },
-  {
-    q: "Wer ist mein absolutes Lieblings-Mausi-Pupsi-Dupsi-Schatzi-Knuffi-Lieblings-Schatzimaus?",
-    answers: [
-      "Du",
-      "Antwort A",
-      "Antwort B",
-      "Alle drei (= du)"
-    ],
-    correct: 0,
-    ok: "du du du — immer nur du 🥰",
-    bad: "es ist Antwort A! also: DU 😂"
+let W, H, CX, CY;
+function resize(){
+  W=canvas.width=window.innerWidth;
+  H=canvas.height=window.innerHeight;
+  CX=W/2; CY=H/2;
+}
+resize();
+window.addEventListener('resize',resize);
+
+// ── Easing ───────────────────────────────────────────────────────
+const ease={
+  out:  t=>1-(1-t)**3,
+  in:   t=>t*t*t,
+  inOut:t=>t<0.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1,
+  back: t=>{const c=1.7;return 1+c*(t-1)**3+(c+1)*(t-1)**2;},
+  elastic:t=>t===0?0:t===1?1:(-(2**(10*(t-1))))*Math.sin(((t-1)*10-0.75)*(2*Math.PI)/3)+1,
+};
+
+// ── Utility ──────────────────────────────────────────────────────
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rand=(a,b)=>Math.random()*(b-a)+a;
+const tau=Math.PI*2;
+
+function hsl(h,s,l,a=1){return `hsla(${h},${s}%,${l}%,${a})`;}
+
+// ── State ────────────────────────────────────────────────────────
+let t0=0;        // story start time
+let phase='idle';
+let particles=[];
+let entities=[];
+let caption='';
+let bgLayer=null; // background renderer
+
+// ── Stars ────────────────────────────────────────────────────────
+const stars=[];
+for(let i=0;i<160;i++) stars.push({x:rand(0,1),y:rand(0,1),r:rand(0.4,2),op:rand(0.1,0.6),sp:rand(1.5,4)});
+let starTwinkle=0;
+
+function drawStars(alpha=1){
+  starTwinkle+=0.016;
+  for(const s of stars){
+    const a=s.op*(0.6+0.4*Math.sin(starTwinkle/s.sp+s.x*10))*alpha;
+    ctx.beginPath();
+    ctx.arc(s.x*W,s.y*H,s.r,0,tau);
+    ctx.fillStyle=`rgba(255,255,255,${a})`;
+    ctx.fill();
   }
-];
-
-let currentQ = 0;
-let score = 0;
-let answering = false;
-
-// ── Screen manager ────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s=>{
-    s.classList.remove('active');
-  });
-  const s = document.getElementById(id);
-  s.classList.add('active');
 }
 
-// ── Start quiz ────────────────────────────────────────────
-function startQuiz() {
-  showScreen('screen-quiz');
-  renderQuestion();
+// ── Particles ────────────────────────────────────────────────────
+class Particle{
+  constructor(x,y,opts={}){
+    this.x=x; this.y=y;
+    this.vx=opts.vx??rand(-2,2);
+    this.vy=opts.vy??rand(-4,-0.5);
+    this.r=opts.r??rand(2,5);
+    this.color=opts.color??'#fff';
+    this.life=1;
+    this.decay=opts.decay??rand(0.012,0.025);
+    this.gravity=opts.gravity??0.06;
+    this.glow=opts.glow??true;
+    this.shape=opts.shape??'circle';
+  }
+  update(){
+    this.x+=this.vx; this.y+=this.vy;
+    this.vy+=this.gravity;
+    this.life-=this.decay;
+  }
+  draw(){
+    if(this.life<=0)return;
+    ctx.save();
+    ctx.globalAlpha=this.life;
+    if(this.glow){
+      ctx.shadowBlur=this.r*4; ctx.shadowColor=this.color;
+    }
+    ctx.fillStyle=this.color;
+    if(this.shape==='circle'){
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.r,0,tau);
+      ctx.fill();
+    } else if(this.shape==='confetti'){
+      ctx.translate(this.x,this.y);
+      ctx.rotate(this.life*10+this.vx);
+      ctx.fillRect(-this.r,-this.r/2,this.r*2,this.r);
+    }
+    ctx.restore();
+  }
 }
 
-function renderQuestion() {
-  const q = questions[currentQ];
-  const total = questions.length;
-
-  document.getElementById('progress-fill').style.width = `${(currentQ/total)*100}%`;
-  document.getElementById('progress-label').textContent = `${currentQ+1} / ${total}`;
-  document.getElementById('q-number').textContent = `Frage ${currentQ+1}`;
-  document.getElementById('q-text').textContent = q.q;
-  document.getElementById('feedback').textContent = '';
-  document.getElementById('feedback').className = 'feedback';
-
-  const answersEl = document.getElementById('answers');
-  answersEl.innerHTML = '';
-  q.answers.forEach((a,i)=>{
-    const btn = document.createElement('button');
-    btn.className = 'ans-btn';
-    btn.textContent = a;
-    btn.onclick = () => handleAnswer(i, btn);
-    answersEl.appendChild(btn);
-  });
-
-  // Animate in
-  const card = document.getElementById('q-card');
-  card.classList.add('enter');
-  setTimeout(()=>card.classList.remove('enter'),50);
+function burst(x,y,n,colors,opts={}){
+  for(let i=0;i<n;i++){
+    const ang=rand(0,tau);
+    const spd=rand(opts.minSpd??1,opts.maxSpd??5);
+    particles.push(new Particle(x,y,{
+      vx:Math.cos(ang)*spd,
+      vy:Math.sin(ang)*spd-(opts.upward??0),
+      r:opts.r??rand(2,5),
+      color:colors[Math.floor(rand(0,colors.length))],
+      decay:opts.decay??rand(0.01,0.022),
+      gravity:opts.gravity??0.05,
+      glow:opts.glow??true,
+      shape:opts.shape??'circle',
+    }));
+  }
 }
 
-function handleAnswer(idx, btn) {
-  if(answering) return;
-  answering = true;
+// ── Caption helper ───────────────────────────────────────────────
+function showCap(text,dur=3000){
+  const el=document.getElementById('caption');
+  el.textContent=text;
+  el.classList.add('show');
+  if(dur>0) setTimeout(()=>el.classList.remove('show'),dur);
+}
 
-  const q = questions[currentQ];
-  const allBtns = document.querySelectorAll('.ans-btn');
-  const fb = document.getElementById('feedback');
+// ── Timeline helper ──────────────────────────────────────────────
+function at(ms,fn){ setTimeout(fn,ms); }
 
-  allBtns.forEach(b=>b.style.pointerEvents='none');
+// ── Story Entities ───────────────────────────────────────────────
 
-  if(idx === q.correct) {
-    btn.classList.add('correct');
-    score++;
-    fb.textContent = q.ok;
-    fb.className = 'feedback show ok';
-    spawnBloom(btn);
-  } else {
-    btn.classList.add('wrong');
-    allBtns[q.correct].classList.add('correct');
-    fb.textContent = q.bad;
-    fb.className = 'feedback show bad';
+// --- GROUND/BACKGROUND STATE ---
+let ground={
+  // 0=night, 1=sunrise, 2=day
+  sunRise:0,
+  // 0=forest-only, 1=split
+  split:0,
+  snowAlpha:0,
+  splitPos:0.5, // x fraction of split
+};
+
+function drawBackground(){
+  const sr=ground.sunRise;
+  // Sky gradient
+  const skyTop= sr<0.5
+    ? lerpColor('#04020a','#1a0530',sr*2)
+    : lerpColor('#1a0530','#ff9932',sr*2-1);
+  const skyBot= sr<0.5
+    ? lerpColor('#06030e','#4a1a6a',sr*2)
+    : lerpColor('#4a1a6a','#ffcc44',sr*2-1);
+
+  const skGrad=ctx.createLinearGradient(0,0,0,H*0.65);
+  skGrad.addColorStop(0,skyTop);
+  skGrad.addColorStop(1,skyBot);
+  ctx.fillStyle=skGrad;
+  ctx.fillRect(0,0,W,H*0.65);
+
+  // Sun
+  if(sr>0.1){
+    const sunY=lerp(H*0.7,H*0.22,(sr-0.1)/0.9);
+    const sunA=clamp((sr-0.1)/0.2,0,1);
+    ctx.save();
+    ctx.globalAlpha=sunA;
+    // rays
+    ctx.shadowBlur=60; ctx.shadowColor='#ffdd44';
+    for(let i=0;i<12;i++){
+      const a=(tau/12)*i;
+      ctx.strokeStyle=`rgba(255,220,80,${0.18*sunA})`;
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.moveTo(CX+Math.cos(a)*45,sunY+Math.sin(a)*45);
+      ctx.lineTo(CX+Math.cos(a)*80,sunY+Math.sin(a)*80);
+      ctx.stroke();
+    }
+    ctx.shadowBlur=80; ctx.shadowColor='#ffcc00';
+    ctx.beginPath();
+    ctx.arc(CX,sunY,38,0,tau);
+    const sunGrad=ctx.createRadialGradient(CX-8,sunY-8,4,CX,sunY,38);
+    sunGrad.addColorStop(0,'#fff9aa');
+    sunGrad.addColorStop(0.5,'#ffe033');
+    sunGrad.addColorStop(1,'#ff9900');
+    ctx.fillStyle=sunGrad;
+    ctx.fill();
+    ctx.restore();
   }
 
-  setTimeout(()=>{
-    answering = false;
-    nextQuestion();
-  }, 1400);
+  // Ground — split forest / snow
+  const sp=clamp(ground.split,0,1);
+  const splitX=W*ground.splitPos;
+
+  // Forest side (left or full)
+  const fGrad=ctx.createLinearGradient(0,H*0.6,0,H);
+  fGrad.addColorStop(0,'#1a3a0a');
+  fGrad.addColorStop(1,'#0d1f06');
+  ctx.fillStyle=fGrad;
+  ctx.fillRect(0,H*0.6,sp<0.01?W:splitX+sp*60,H);
+
+  if(sp>0.01){
+    // Snow side (right)
+    const snGrad=ctx.createLinearGradient(0,H*0.6,0,H);
+    snGrad.addColorStop(0,'#ddeeff');
+    snGrad.addColorStop(1,'#aaccee');
+    ctx.fillStyle=snGrad;
+    ctx.fillRect(splitX-sp*60,H*0.6,W-(splitX-sp*60),H);
+    // snow overlay sparkles
+    if(Math.random()<0.06){
+      particles.push(new Particle(rand(splitX,W),rand(H*0.6,H),{
+        vx:rand(-0.3,0.3),vy:rand(-0.2,0.2),
+        r:rand(1,2.5),color:'#ffffff',
+        decay:0.008,gravity:0,glow:true,
+      }));
+    }
+    // dividing tree line
+    ctx.strokeStyle=`rgba(60,30,10,${sp*0.6})`;
+    ctx.lineWidth=sp*6;
+    ctx.beginPath();
+    ctx.moveTo(splitX,H*0.58);
+    ctx.lineTo(splitX,H);
+    ctx.stroke();
+  }
+
+  // Trees (forest side)
+  drawTrees(sp<0.01?W:splitX+sp*40);
+
+  // Snow trees (snow side) if split
+  if(sp>0.01) drawSnowTrees(splitX-sp*40);
+
+  // Grass
+  drawGrass(sp<0.01?W:splitX+sp*40);
+
+  // Stars fade as sun rises
+  drawStars(clamp(1-sr*1.5,0,1));
 }
 
-function nextQuestion() {
-  currentQ++;
-  const card = document.getElementById('q-card');
+function drawTrees(maxX){
+  const trees=[
+    {x:0.08,h:0.32,w:0.06},{x:0.14,h:0.28,w:0.05},
+    {x:0.22,h:0.35,w:0.065},{x:0.05,h:0.25,w:0.045},
+    {x:0.30,h:0.3,w:0.055},{x:0.38,h:0.26,w:0.05},
+  ];
+  for(const tr of trees){
+    const tx=tr.x*W; if(tx>maxX)continue;
+    const th=tr.h*H; const tw=tr.w*W;
+    const ty=H*0.62-th;
+    // trunk
+    ctx.fillStyle='#2a1200';
+    ctx.fillRect(tx-tw*0.08,ty+th*0.7,tw*0.16,th*0.3);
+    // foliage layers
+    for(let l=0;l<3;l++){
+      const ly=ty+th*0.6*l/3;
+      const lw=tw*(1.1-l*0.25);
+      ctx.beginPath();
+      ctx.moveTo(tx,ly); ctx.lineTo(tx-lw/2,ly+th*0.35); ctx.lineTo(tx+lw/2,ly+th*0.35);
+      ctx.closePath();
+      const gr=clamp(0.18+ground.sunRise*0.12,0,0.35);
+      ctx.fillStyle=`hsl(120,${40+l*8}%,${12+l*4}%)`;
+      ctx.fill();
+    }
+  }
+}
 
-  if(currentQ >= questions.length) {
-    // fill progress to 100%
-    document.getElementById('progress-fill').style.width = '100%';
-    card.classList.add('exit-left');
+function drawSnowTrees(minX){
+  const trees=[
+    {x:0.65,h:0.28,w:0.05},{x:0.72,h:0.32,w:0.055},
+    {x:0.80,h:0.26,w:0.048},{x:0.88,h:0.30,w:0.052},
+    {x:0.94,h:0.27,w:0.048},
+  ];
+  for(const tr of trees){
+    const tx=tr.x*W; if(tx<minX)continue;
+    const th=tr.h*H; const tw=tr.w*W;
+    const ty=H*0.62-th;
+    ctx.fillStyle='#554433';
+    ctx.fillRect(tx-tw*0.08,ty+th*0.7,tw*0.16,th*0.3);
+    for(let l=0;l<3;l++){
+      const ly=ty+th*0.6*l/3;
+      const lw=tw*(1.1-l*0.25);
+      ctx.beginPath();
+      ctx.moveTo(tx,ly); ctx.lineTo(tx-lw/2,ly+th*0.35); ctx.lineTo(tx+lw/2,ly+th*0.35);
+      ctx.closePath();
+      ctx.fillStyle=l===0?'#667788':'#778899';
+      ctx.fill();
+      // snow cap
+      ctx.beginPath();
+      ctx.moveTo(tx,ly); ctx.lineTo(tx-lw*0.4,ly+th*0.12); ctx.lineTo(tx+lw*0.4,ly+th*0.12);
+      ctx.closePath();
+      ctx.fillStyle='rgba(220,235,255,0.85)';
+      ctx.fill();
+    }
+  }
+}
+
+function drawGrass(maxX){
+  const blades=120;
+  for(let i=0;i<blades;i++){
+    const bx=rand(0,maxX);
+    const by=H*0.62+rand(-6,4);
+    const bh=rand(18,38);
+    const bl=rand(-8,8);
+    ctx.strokeStyle=`hsl(${110+rand(-10,10)},${55+rand(-10,10)}%,${18+rand(-4,8)+ground.sunRise*12}%)`;
+    ctx.lineWidth=1.5;
+    ctx.shadowBlur=6;
+    ctx.shadowColor='rgba(100,200,60,0.25)';
+    ctx.beginPath();
+    ctx.moveTo(bx,by);
+    ctx.quadraticCurveTo(bx+bl,by-bh*0.6,bx+bl*1.8,by-bh);
+    ctx.stroke();
+    ctx.shadowBlur=0;
+  }
+}
+
+// ── Color lerp ───────────────────────────────────────────────────
+function hexToRgb(h){
+  const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
+  return [r,g,b];
+}
+function lerpColor(a,b,t){
+  const [ar,ag,ab]=hexToRgb(a),  [br,bg,bb]=hexToRgb(b);
+  return `rgb(${Math.round(lerp(ar,br,t))},${Math.round(lerp(ag,bg,t))},${Math.round(lerp(ab,bb,t))})`;
+}
+
+// ── DAISY ────────────────────────────────────────────────────────
+const daisy={
+  alive:false,
+  x:0,y:0,
+  stemH:0, maxStemH:0,
+  petalScale:0,
+  rot:0,
+  alpha:1,
+  glowPulse:0,
+};
+
+function drawDaisy(){
+  if(!daisy.alive)return;
+  const {x,y,stemH,maxStemH,petalScale,rot,alpha}=daisy;
+  ctx.save(); ctx.globalAlpha=alpha;
+
+  // Stem glow
+  ctx.shadowBlur=14; ctx.shadowColor='rgba(100,220,60,0.7)';
+  ctx.strokeStyle='#6ecf3a'; ctx.lineWidth=5; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+  ctx.quadraticCurveTo(x+12,y-stemH*0.5,x,y-stemH);
+  ctx.stroke();
+
+  // Small leaf
+  if(stemH>maxStemH*0.4){
+    ctx.save();
+    ctx.translate(x+6,y-stemH*0.5);
+    ctx.rotate(-0.5);
+    ctx.shadowBlur=10; ctx.shadowColor='rgba(80,200,40,0.6)';
+    ctx.fillStyle='#5abf2a';
+    ctx.beginPath();
+    ctx.ellipse(0,-10,7,16,0,0,tau);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  ctx.translate(x,y-stemH);
+  ctx.rotate(rot);
+
+  // Petals
+  for(let i=0;i<12;i++){
+    ctx.save();
+    ctx.rotate((tau/12)*i);
+    ctx.scale(petalScale,petalScale);
+    ctx.shadowBlur=18; ctx.shadowColor='rgba(255,255,180,0.6)';
+    const pg=ctx.createRadialGradient(0,-52,2,0,-52,20);
+    pg.addColorStop(0,'#fffff0'); pg.addColorStop(1,'#f0e060');
+    ctx.fillStyle=pg;
+    ctx.beginPath();
+    ctx.ellipse(0,-52,9,20,0,0,tau);
+    ctx.fill();
+    ctx.restore();
+  }
+  // Inner petals
+  for(let i=0;i<12;i++){
+    ctx.save();
+    ctx.rotate((tau/12)*i+tau/24);
+    ctx.scale(petalScale*0.8,petalScale*0.8);
+    ctx.fillStyle='rgba(255,255,220,0.55)';
+    ctx.beginPath();
+    ctx.ellipse(0,-36,6,13,0,0,tau);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Center
+  daisy.glowPulse+=0.05;
+  const gp=0.8+0.2*Math.sin(daisy.glowPulse);
+  ctx.shadowBlur=22*gp; ctx.shadowColor='rgba(255,200,0,0.8)';
+  const cg=ctx.createRadialGradient(-4,-4,2,0,0,24);
+  cg.addColorStop(0,'#fff566'); cg.addColorStop(0.5,'#f5c000'); cg.addColorStop(1,'#c87800');
+  ctx.beginPath(); ctx.arc(0,0,24,0,tau);
+  ctx.fillStyle=cg; ctx.fill();
+  // Center dots
+  for(let i=0;i<8;i++){
+    const a=(tau/8)*i;
+    ctx.beginPath();
+    ctx.arc(Math.cos(a)*12,Math.sin(a)*12,3,0,tau);
+    ctx.fillStyle='rgba(100,50,0,0.5)'; ctx.fill();
+  }
+
+  // Floating glow dots
+  for(let i=0;i<6;i++){
+    const a=(tau/6)*i+daisy.glowPulse*0.7;
+    const r=30+8*Math.sin(daisy.glowPulse+i);
+    ctx.beginPath();
+    ctx.arc(Math.cos(a)*r,Math.sin(a)*r,2,0,tau);
+    ctx.shadowBlur=8; ctx.shadowColor='#ffe066';
+    ctx.fillStyle='rgba(255,230,80,0.7)';
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// ── BIRD ─────────────────────────────────────────────────────────
+const bird={
+  alive:false,
+  x:0,y:0,
+  scale:0,
+  alpha:1,
+  wingT:0,
+  hue1:180, hue2:280, // color shift over time
+  colorT:0,
+  bob:0,
+};
+
+function drawBird(){
+  if(!bird.alive)return;
+  bird.wingT+=0.06;
+  bird.bob+=0.03;
+  bird.colorT=Math.min(bird.colorT+0.004,1);
+
+  const hue=lerp(bird.hue1,bird.hue2,0.5+0.5*Math.sin(bird.colorT*Math.PI));
+  const col=`hsl(${hue},80%,65%)`;
+  const col2=`hsl(${hue+40},90%,75%)`;
+
+  const bx=bird.x, by=bird.y+Math.sin(bird.bob)*8;
+
+  ctx.save();
+  ctx.translate(bx,by);
+  ctx.scale(bird.scale,bird.scale);
+  ctx.globalAlpha=bird.alpha;
+
+  // Glow aura
+  const aura=ctx.createRadialGradient(0,0,10,0,0,80);
+  aura.addColorStop(0,`hsla(${hue},90%,70%,0.18)`);
+  aura.addColorStop(1,'transparent');
+  ctx.beginPath(); ctx.arc(0,0,80,0,tau);
+  ctx.fillStyle=aura; ctx.fill();
+
+  // Wing flap
+  const wA=Math.sin(bird.wingT)*0.5;
+  // Left wing
+  ctx.save(); ctx.rotate(-wA);
+  ctx.shadowBlur=20; ctx.shadowColor=col;
+  ctx.fillStyle=col;
+  ctx.beginPath();
+  ctx.ellipse(-52,-8,44,16,0,0,tau);
+  ctx.fill();
+  // feather lines
+  for(let f=0;f<3;f++){
+    ctx.strokeStyle=`rgba(255,255,255,0.25)`;
+    ctx.lineWidth=1.2; ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.moveTo(-20+f*2,-10+f*8); ctx.lineTo(-82+f*4,-10+f*5);
+    ctx.stroke();
+  }
+  ctx.restore();
+  // Right wing
+  ctx.save(); ctx.rotate(wA);
+  ctx.fillStyle=col;
+  ctx.shadowBlur=20; ctx.shadowColor=col;
+  ctx.beginPath();
+  ctx.ellipse(52,-8,44,16,0,0,tau);
+  ctx.fill();
+  for(let f=0;f<3;f++){
+    ctx.strokeStyle='rgba(255,255,255,0.25)';
+    ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(20-f*2,-10+f*8); ctx.lineTo(82-f*4,-10+f*5);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Tail
+  ctx.shadowBlur=14; ctx.shadowColor=col2;
+  ctx.fillStyle=col2;
+  for(let t=-1;t<=1;t++){
+    ctx.save(); ctx.rotate(t*0.22);
+    ctx.beginPath(); ctx.ellipse(t*10,40,8,22,0,0,tau);
+    ctx.fill(); ctx.restore();
+  }
+
+  // Body
+  const bodyGrad=ctx.createRadialGradient(-6,-4,4,0,4,34);
+  bodyGrad.addColorStop(0,'#e8f4ff'); bodyGrad.addColorStop(0.5,col); bodyGrad.addColorStop(1,`hsl(${hue},70%,40%)`);
+  ctx.shadowBlur=22; ctx.shadowColor=col;
+  ctx.fillStyle=bodyGrad;
+  ctx.beginPath(); ctx.ellipse(0,4,26,34,0,0,tau); ctx.fill();
+
+  // Head
+  ctx.beginPath(); ctx.arc(0,-34,20,0,tau);
+  ctx.fillStyle=bodyGrad; ctx.fill();
+  // Head highlight
+  ctx.beginPath(); ctx.ellipse(-5,-40,8,6,-.4,0,tau);
+  ctx.fillStyle='rgba(255,255,255,0.18)'; ctx.fill();
+
+  // Crest
+  for(let c=-1;c<=1;c++){
+    ctx.save(); ctx.rotate(c*0.3);
+    ctx.shadowBlur=10; ctx.shadowColor=col2;
+    ctx.fillStyle=col2;
+    ctx.beginPath(); ctx.ellipse(c*5,-53,4,12,0,0,tau); ctx.fill();
+    ctx.restore();
+  }
+
+  // Beak
+  ctx.fillStyle='#f5c842';
+  ctx.shadowBlur=8; ctx.shadowColor='#ffe066';
+  ctx.beginPath(); ctx.moveTo(12,-34); ctx.lineTo(22,-31); ctx.lineTo(12,-28); ctx.closePath(); ctx.fill();
+
+  // Eye
+  ctx.beginPath(); ctx.arc(-4,-36,6,0,tau); ctx.fillStyle='#0a1a2e'; ctx.fill();
+  ctx.beginPath(); ctx.arc(-4,-36,4,0,tau); ctx.fillStyle='#1a3a5c'; ctx.fill();
+  ctx.beginPath(); ctx.arc(-2,-38,2,0,tau); ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fill();
+
+  // Feet
+  ctx.strokeStyle='#f5c842'; ctx.lineWidth=2.2; ctx.lineCap='round';
+  [[-8,40],[ 8,40]].forEach(([fx,fy])=>{
+    ctx.beginPath(); ctx.moveTo(fx,fy); ctx.lineTo(fx,fy+16); ctx.stroke();
+    for(let t=-1;t<=1;t++){
+      ctx.beginPath(); ctx.moveTo(fx,fy+16); ctx.lineTo(fx+t*10,fy+24); ctx.stroke();
+    }
+  });
+
+  // Orbiting glow dots
+  for(let i=0;i<5;i++){
+    const a=(tau/5)*i+bird.wingT*0.4;
+    const r=50+12*Math.sin(bird.wingT+i*1.3);
+    ctx.beginPath(); ctx.arc(Math.cos(a)*r,Math.sin(a)*r,2.5,0,tau);
+    ctx.shadowBlur=10; ctx.shadowColor=col2;
+    ctx.fillStyle=col2; ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// ── BUTTERFLY ────────────────────────────────────────────────────
+class Butterfly{
+  constructor(x,y,opts={}){
+    this.x=x; this.y=y;
+    this.vx=opts.vx??rand(-1,1);
+    this.vy=opts.vy??-1.5;
+    this.scale=opts.scale??0;
+    this.targetScale=opts.targetScale??1;
+    this.alpha=0;
+    this.targetAlpha=1;
+    this.flapT=rand(0,tau);
+    this.hue=opts.hue??rand(0,360);
+    this.alive=true;
+    this.age=0;
+    this.bob=rand(0,tau);
+    this.wanderAng=rand(0,tau);
+    this.sparkle=opts.sparkle??false;
+    this.sparkleAmt=opts.sparkleAmt??0;
+    this.target=null; // {x,y} for cone-seeking
+    this.state=opts.state??'fly'; // fly | seeking | inside | emerging | wandering
+    this.stateT=0;
+    this.id=Math.random();
+  }
+  update(){
+    this.age+=0.016;
+    this.flapT+=0.12;
+    this.bob+=0.04;
+    this.scale+=(this.targetScale-this.scale)*0.08;
+    this.alpha+=(this.targetAlpha-this.alpha)*0.07;
+    this.stateT+=0.016;
+
+    if(this.state==='seeking' && this.target){
+      const dx=this.target.x-this.x, dy=this.target.y-this.y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<8){ this.state='inside'; this.stateT=0; this.alive=false; return; }
+      this.vx+=dx/dist*0.15; this.vy+=dy/dist*0.15;
+      this.vx*=0.92; this.vy*=0.92;
+    } else if(this.state==='wandering'){
+      this.wanderAng+=rand(-0.06,0.06);
+      this.vx+=Math.cos(this.wanderAng)*0.04;
+      this.vy+=Math.sin(this.wanderAng)*0.04-0.01;
+      this.vx*=0.98; this.vy*=0.98;
+      // gentle bob
+      this.vy+=Math.sin(this.bob)*0.015;
+    } else {
+      this.vx*=0.98; this.vy*=0.97;
+      this.vy+=Math.sin(this.bob)*0.012;
+    }
+
+    this.x+=this.vx; this.y+=this.vy;
+
+    // sparkle trail
+    if(this.sparkle && this.sparkleAmt>0 && Math.random()<this.sparkleAmt*0.3){
+      const sparkCols=['#ffffff','#ffe066',`hsl(${this.hue},100%,75%)`,`hsl(${this.hue+60},100%,80%)`];
+      particles.push(new Particle(this.x,this.y,{
+        vx:rand(-1,1),vy:rand(-1.5,0.5),
+        r:rand(1.5,4),color:sparkCols[Math.floor(rand(0,4))],
+        decay:rand(0.02,0.04),gravity:-0.02,glow:true,
+      }));
+    }
+  }
+  draw(){
+    if(!this.alive && this.state!=='wandering') return;
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.scale(this.scale,this.scale);
+    ctx.globalAlpha=this.alpha;
+
+    const flap=Math.sin(this.flapT)*0.8;
+    const h=this.hue;
+
+    // Wing helper
+    const drawWing=(side,scaleX)=>{
+      ctx.save();
+      ctx.scale(scaleX*Math.cos(flap),1);
+
+      // 8-eye pattern: 2 circles per wing (upper/lower)
+      const wingColors=[
+        `hsl(${h},90%,60%)`, `hsl(${h+30},100%,70%)`,
+        `hsl(${h+60},80%,65%)`, `hsl(${h+90},90%,60%)`,
+      ];
+
+      // Upper wing
+      ctx.shadowBlur=16; ctx.shadowColor=wingColors[0];
+      ctx.fillStyle=wingColors[0];
+      ctx.beginPath();
+      ctx.ellipse(side*22,-14,20,28,side*0.3,0,tau);
+      ctx.fill();
+      // Upper wing eye
+      ctx.fillStyle=`hsl(${h+180},80%,30%)`;
+      ctx.beginPath(); ctx.arc(side*22,-14,8,0,tau); ctx.fill();
+      ctx.fillStyle=`hsl(${h+180},60%,80%)`;
+      ctx.beginPath(); ctx.arc(side*22-side*2,-16,4,0,tau); ctx.fill();
+      ctx.fillStyle='white';
+      ctx.beginPath(); ctx.arc(side*22-side*1,-17,1.8,0,tau); ctx.fill();
+
+      // Lower wing
+      ctx.shadowBlur=14; ctx.shadowColor=wingColors[2];
+      ctx.fillStyle=wingColors[2];
+      ctx.beginPath();
+      ctx.ellipse(side*18,18,16,22,side*0.5,0,tau);
+      ctx.fill();
+      // Lower wing eye
+      ctx.fillStyle=`hsl(${h+200},80%,28%)`;
+      ctx.beginPath(); ctx.arc(side*18,18,6,0,tau); ctx.fill();
+      ctx.fillStyle=`hsl(${h+200},60%,75%)`;
+      ctx.beginPath(); ctx.arc(side*18-side*1.5,16,3,0,tau); ctx.fill();
+      ctx.fillStyle='white';
+      ctx.beginPath(); ctx.arc(side*18-side*0.5,15,1.5,0,tau); ctx.fill();
+
+      // Wing shimmer
+      ctx.strokeStyle=`rgba(255,255,255,0.2)`;
+      ctx.lineWidth=0.8;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(side*36,-24); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,4); ctx.lineTo(side*32,24); ctx.stroke();
+
+      ctx.restore();
+    };
+
+    drawWing(1,1);   // right
+    drawWing(-1,-1); // left (mirror)
+
+    // Body
+    ctx.shadowBlur=12; ctx.shadowColor=`hsl(${h},80%,50%)`;
+    ctx.fillStyle=`hsl(${h+20},50%,25%)`;
+    ctx.beginPath(); ctx.ellipse(0,0,5,22,0,0,tau); ctx.fill();
+    // Head
+    ctx.fillStyle=`hsl(${h+20},60%,30%)`;
+    ctx.beginPath(); ctx.arc(0,-22,5,0,tau); ctx.fill();
+    // Antennae
+    ctx.strokeStyle=`hsl(${h},70%,55%)`; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(-2,-24); ctx.quadraticCurveTo(-12,-40,-8,-48); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(2,-24); ctx.quadraticCurveTo(12,-40,8,-48); ctx.stroke();
+    ctx.fillStyle=`hsl(${h},90%,70%)`;
+    ctx.beginPath(); ctx.arc(-8,-48,3,0,tau); ctx.fill();
+    ctx.beginPath(); ctx.arc(8,-48,3,0,tau); ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+// ── CONE ─────────────────────────────────────────────────────────
+const cone={
+  alive:false,
+  x:0, y:0,
+  scale:0,
+  glow:0,
+  alpha:0,
+};
+
+function drawCone(){
+  if(!cone.alive)return;
+  cone.glow+=0.04;
+  ctx.save();
+  ctx.globalAlpha=cone.alpha;
+  ctx.translate(cone.x,cone.y);
+  ctx.scale(cone.scale,cone.scale);
+
+  const gp=0.7+0.3*Math.sin(cone.glow);
+  ctx.shadowBlur=30*gp; ctx.shadowColor='rgba(255,80,80,0.7)';
+
+  // Cone body
+  const cg=ctx.createLinearGradient(-25,0,25,0);
+  cg.addColorStop(0,'#cc1111'); cg.addColorStop(0.5,'#ff4444'); cg.addColorStop(1,'#aa0000');
+  ctx.fillStyle=cg;
+  ctx.beginPath();
+  ctx.moveTo(0,-55); ctx.lineTo(-28,30); ctx.lineTo(28,30); ctx.closePath(); ctx.fill();
+
+  // White stripes
+  ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=4;
+  for(let s=0;s<3;s++){
+    const sy=-30+s*22;
+    const hw=((sy+55)/85)*28;
+    ctx.beginPath(); ctx.moveTo(-hw,sy); ctx.lineTo(hw,sy); ctx.stroke();
+  }
+
+  // Base
+  ctx.shadowBlur=10; ctx.shadowColor='rgba(255,60,60,0.5)';
+  ctx.fillStyle='#881100';
+  ctx.beginPath(); ctx.ellipse(0,30,28,8,0,0,tau); ctx.fill();
+
+  // Glow pulses
+  for(let i=0;i<4;i++){
+    const a=(tau/4)*i+cone.glow;
+    ctx.beginPath(); ctx.arc(Math.cos(a)*38,Math.sin(a)*20+0,3,0,tau);
+    ctx.fillStyle='rgba(255,80,80,0.5)'; ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// ── BEARS ────────────────────────────────────────────────────────
+const bears={
+  alive:false,
+  alpha:0,
+  bounce:0,
+  confettiLanded:0,
+};
+
+function drawBears(){
+  if(!bears.alive)return;
+  bears.bounce+=0.04;
+  ctx.save();
+  ctx.globalAlpha=bears.alpha;
+
+  // Brown bear (left, forest side)
+  const lx=CX-120, ly=H*0.62;
+  drawBear(lx,ly,'brown',false);
+
+  // Polar bear (right, snow side)
+  const rx=CX+120, ry=H*0.62;
+  drawBear(rx,ry,'polar',true);
+
+  ctx.restore();
+}
+
+function drawBear(x,y,type,hat){
+  const bob=Math.sin(bears.bounce+(type==='polar'?0:Math.PI))*4;
+  ctx.save();
+  ctx.translate(x,y+bob);
+
+  const face= type==='brown'?'#7a4a1a':'#f0f0f0';
+  const body= type==='brown'?'#6a3a10':'#e8e8e8';
+  const dark= type==='brown'?'#3a1a00':'#a0a0a0';
+  const nose= type==='brown'?'#1a0800':'#2a2a2a';
+
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  ctx.beginPath(); ctx.ellipse(0,5,35,8,0,0,tau); ctx.fill();
+
+  // Body
+  ctx.shadowBlur=type==='polar'?18:12;
+  ctx.shadowColor=type==='polar'?'rgba(200,230,255,0.4)':'rgba(100,60,10,0.4)';
+  ctx.fillStyle=body;
+  ctx.beginPath(); ctx.ellipse(0,-22,28,34,0,0,tau); ctx.fill();
+
+  // Belly
+  ctx.fillStyle=type==='brown'?'#c08050':'#d8d8d8';
+  ctx.beginPath(); ctx.ellipse(0,-18,16,22,0,0,tau); ctx.fill();
+
+  // Arms
+  ctx.fillStyle=body;
+  ctx.beginPath(); ctx.ellipse(-30,-18,10,16,-.5,0,tau); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(30,-18,10,16,.5,0,tau); ctx.fill();
+
+  // Legs
+  ctx.fillStyle=body;
+  ctx.beginPath(); ctx.ellipse(-14,8,10,12,0,0,tau); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(14,8,10,12,0,0,tau); ctx.fill();
+  // Paws
+  ctx.fillStyle=dark;
+  ctx.beginPath(); ctx.ellipse(-14,18,10,7,0,0,tau); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(14,18,10,7,0,0,tau); ctx.fill();
+
+  // Head
+  ctx.fillStyle=face;
+  ctx.shadowBlur=10; ctx.shadowColor=type==='polar'?'rgba(180,220,255,0.35)':'rgba(80,40,0,0.35)';
+  ctx.beginPath(); ctx.arc(0,-54,26,0,tau); ctx.fill();
+  // Ears
+  ctx.fillStyle=face;
+  ctx.beginPath(); ctx.arc(-20,-76,12,0,tau); ctx.fill();
+  ctx.beginPath(); ctx.arc(20,-76,12,0,tau); ctx.fill();
+  ctx.fillStyle=dark;
+  ctx.beginPath(); ctx.arc(-20,-76,7,0,tau); ctx.fill();
+  ctx.beginPath(); ctx.arc(20,-76,7,0,tau); ctx.fill();
+
+  // Snout
+  ctx.fillStyle=type==='brown'?'#b07040':'#d8d8d8';
+  ctx.beginPath(); ctx.ellipse(0,-46,13,10,0,0,tau); ctx.fill();
+  // Nose
+  ctx.fillStyle=nose;
+  ctx.shadowBlur=4; ctx.shadowColor='rgba(0,0,0,0.5)';
+  ctx.beginPath(); ctx.ellipse(0,-49,6,4,0,0,tau); ctx.fill();
+  // Eyes
+  ctx.fillStyle='#111';
+  ctx.beginPath(); ctx.arc(-9,-58,4,0,tau); ctx.fill();
+  ctx.beginPath(); ctx.arc(9,-58,4,0,tau); ctx.fill();
+  ctx.fillStyle='white';
+  ctx.beginPath(); ctx.arc(-8,-59.5,1.5,0,tau); ctx.fill();
+  ctx.beginPath(); ctx.arc(10,-59.5,1.5,0,tau); ctx.fill();
+
+  // Smile
+  ctx.strokeStyle=type==='brown'?'#3a1a00':'#555';
+  ctx.lineWidth=2; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.arc(0,-46,7,0.3,Math.PI-0.3);
+  ctx.stroke();
+
+  // Birthday hat (polar bear)
+  if(hat){
+    ctx.save();
+    ctx.translate(0,-78);
+    // Hat cone
+    const hg=ctx.createLinearGradient(-14,0,14,0);
+    hg.addColorStop(0,'#dd1188'); hg.addColorStop(0.5,'#ff55bb'); hg.addColorStop(1,'#aa0066');
+    ctx.shadowBlur=14; ctx.shadowColor='rgba(255,80,200,0.6)';
+    ctx.fillStyle=hg;
+    ctx.beginPath(); ctx.moveTo(0,-38); ctx.lineTo(-16,0); ctx.lineTo(16,0); ctx.closePath(); ctx.fill();
+    // Stripes
+    ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=2.5;
+    for(let s=0;s<3;s++){
+      const sy=-28+s*12;
+      const hw=((sy+38)/38)*16;
+      ctx.beginPath(); ctx.moveTo(-hw,sy); ctx.lineTo(hw,sy); ctx.stroke();
+    }
+    // Brim
+    ctx.fillStyle='#ff55bb';
+    ctx.beginPath(); ctx.ellipse(0,0,18,6,0,0,tau); ctx.fill();
+    // Pompom
+    ctx.shadowBlur=10; ctx.shadowColor='#ffffff';
+    ctx.fillStyle='white';
+    ctx.beginPath(); ctx.arc(0,-38,5,0,tau); ctx.fill();
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+// ── CONFETTI ─────────────────────────────────────────────────────
+function launchConfetti(n=200){
+  const cols=[
+    '#f43f5e','#f97316','#eab308','#22c55e','#3b82f6',
+    '#8b5cf6','#ec4899','#06b6d4','#ffffff','#fbbf24',
+  ];
+  for(let i=0;i<n;i++){
     setTimeout(()=>{
-      showScoreAndProceed();
-    },500);
+      particles.push(new Particle(rand(W*0.1,W*0.9),rand(-20,H*0.3),{
+        vx:rand(-3,3),
+        vy:rand(-4,1),
+        r:rand(4,9),
+        color:cols[Math.floor(rand(0,cols.length))],
+        decay:rand(0.004,0.01),
+        gravity:0.12,
+        glow:false,
+        shape:'confetti',
+      }));
+    },i*12);
+  }
+}
+
+// ── BUTTERFLIES ARRAY ────────────────────────────────────────────
+let butterflies=[];
+let mainButterfly=null;
+
+// ── MAIN LOOP ─────────────────────────────────────────────────────
+let lastT=0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  if(!t0 || phase==='idle') {
+    // Static pre-start: just stars + bg
+    ctx.clearRect(0,0,W,H);
+    drawBackground();
+    drawStars(1);
+    particles=particles.filter(p=>{p.update();p.draw();return p.life>0;});
     return;
   }
 
-  card.classList.add('exit-left');
-  setTimeout(()=>{
-    card.classList.remove('exit-left');
-    renderQuestion();
-  },400);
+  const dt=Math.min((ts-lastT)/16.67,3);
+  lastT=ts;
+
+  ctx.clearRect(0,0,W,H);
+  drawBackground();
+
+  // Entities draw order: daisy → cone → bird → butterflies → bears
+  drawDaisy();
+  drawCone();
+  drawBird();
+  butterflies.forEach(b=>{b.update();b.draw();});
+  butterflies=butterflies.filter(b=>b.alpha>0.01);
+  drawBears();
+
+  // Particles on top
+  particles=particles.filter(p=>{p.update();p.draw();return p.life>0;});
 }
+requestAnimationFrame(loop);
 
-function showScoreAndProceed() {
-  const toast = document.getElementById('score-toast');
-  const msgs = ['fast alles gewusst! 🌸','du kennst mich so gut 🥰','perfekt — du kennst mein Herz 💕'];
-  const msg = score >= 6 ? msgs[2] : score >= 4 ? msgs[1] : msgs[0];
-  toast.textContent = `${score} / ${questions.length} richtig — ${msg}`;
-  toast.classList.add('show');
-  setTimeout(()=>{
-    toast.classList.remove('show');
-    setTimeout(()=>startLetters(), 600);
-  }, 2800);
-}
+// ── STORY TIMELINE ────────────────────────────────────────────────
+function startStory(){
+  document.getElementById('start-btn').classList.add('fade-out');
+  t0=performance.now();
+  phase='story';
+  lastT=performance.now();
 
-function spawnBloom(btn) {
-  const rect = btn.getBoundingClientRect();
-  const emojis = ['🌸','🌺','✿','💕','🌷'];
-  for(let i=0;i<4;i++){
-    const b = document.createElement('div');
-    b.className = 'bloom-burst';
-    b.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-    b.style.cssText = `left:${rect.left+Math.random()*rect.width}px;top:${rect.top}px;animation-delay:${i*0.1}s;font-size:${1.2+Math.random()*0.8}rem;`;
-    document.body.appendChild(b);
-    setTimeout(()=>b.remove(), 1400);
-  }
-}
+  const cx=CX, groundY=H*0.62;
 
-// ── Letters ───────────────────────────────────────────────
-const letters = [
-  { icon:'🌸', text:'Du machst jeden Tag ein bisschen heller.' },
-  { icon:'✨', text:'Ich bin so froh, dass das Universum dich in meinen Weg gestellt hat.' },
-  { icon:'🥺', text:'Wenn ich aufgeregt bin, will ich es als erstes dir erzählen.' },
-  { icon:'💬', text:'Dein Lachen ist mein Lieblingsgeräusch auf der ganzen Welt.' },
-  { icon:'🌙', text:'Ich denke an dich, bevor ich einschlafe — jede Nacht.' },
-  { icon:'💪', text:'Du schaffst deine Prüfungen. Ich glaube an dich — wirklich und ganz.' },
-  { icon:'❤️', text:'Ich liebe dich mehr als Worte es je könnten.' },
-];
+  // ─ CHAPTER 1: Daisy grows ─────────────────── t=0
+  showCap('Eine Geschichte beginnt …',3000);
+  daisy.alive=true;
+  daisy.x=cx; daisy.y=groundY;
+  daisy.maxStemH=H*0.22;
+  daisy.petalScale=0; daisy.stemH=0; daisy.alpha=1;
 
-let openedCount = 0;
-let activeMsg = null;
-
-function startLetters() {
-  showScreen('screen-letters');
-  spawnFallingPetals();
-  const grid = document.getElementById('envelopes-grid');
-  grid.innerHTML = '';
-
-  letters.forEach((l,i)=>{
-    const env = document.createElement('div');
-    env.className = 'envelope';
-    env.innerHTML = `
-      <div class="env-body">
-        <div class="env-flap"></div>
-        <div class="env-seal">${l.icon}</div>
-        <div class="env-num">${i+1}</div>
-      </div>`;
-    env.style.cssText = `opacity:0; transform:translateY(20px); transition: opacity 0.5s ease ${i*0.1}s, transform 0.5s ease ${i*0.1}s;`;
-    env.onclick = () => openLetter(env, l, i);
-    grid.appendChild(env);
-    setTimeout(()=>{
-      env.style.opacity='1'; env.style.transform='translateY(0)';
-    }, 50);
-  });
-}
-
-function openLetter(envEl, letter, idx) {
-  if(envEl.classList.contains('opened')) return;
-  envEl.classList.add('opened');
-
-  // Close previous popup if open
-  if(activeMsg) dismissMsg(true);
-
-  const rect = envEl.getBoundingClientRect();
-  const popup = document.getElementById('msg-pop');
-  document.getElementById('msg-pop-icon').textContent = letter.icon;
-  document.getElementById('msg-pop-text').textContent = letter.text;
-
-  // Position popup above envelope
-  const pw = Math.min(300, window.innerWidth - 32);
-  let left = rect.left + rect.width/2 - pw/2;
-  left = Math.max(16, Math.min(left, window.innerWidth - pw - 16));
-  const top = Math.max(20, rect.top - 140);
-
-  popup.style.left = left+'px';
-  popup.style.top = top+'px';
-  popup.style.width = pw+'px';
-  popup.classList.remove('puff');
-  popup.classList.add('show');
-  activeMsg = popup;
-
-  popup.onclick = () => dismissMsg(false, envEl);
-
-  openedCount++;
-  const remaining = letters.length - openedCount;
-  const countEl = document.getElementById('letters-count');
-  countEl.textContent = remaining > 0 ? `noch ${remaining} Brief${remaining===1?'':'e'}` : 'alle geöffnet 🌸';
-
-  if(openedCount === letters.length) {
-    setTimeout(()=>{
-      dismissMsg(true);
-      setTimeout(showFinalGarden, 800);
-    }, 2200);
-  }
-}
-
-function dismissMsg(immediate, envEl) {
-  const popup = document.getElementById('msg-pop');
-  if(immediate){
-    popup.classList.remove('show');
-  } else {
-    popup.classList.add('puff');
-    setTimeout(()=>{ popup.classList.remove('show','puff'); },500);
-    // Sprout mini flower from envelope
-    if(envEl){
-      const rect = envEl.getBoundingClientRect();
-      spawnMiniFlower(rect.left+rect.width/2, rect.top+rect.height/2);
-    }
-  }
-  activeMsg = null;
-}
-
-function spawnMiniFlower(x,y) {
-  const b = document.createElement('div');
-  b.style.cssText=`position:fixed;left:${x}px;top:${y}px;font-size:1.8rem;z-index:300;pointer-events:none;animation:burst-up 1.4s ease forwards;`;
-  b.textContent='🌸';
-  document.body.appendChild(b);
-  setTimeout(()=>b.remove(),1500);
-}
-
-// ── Final Garden ──────────────────────────────────────────
-const NS = 'http://www.w3.org/2000/svg';
-function svgEl(tag,a={}){
-  const e=document.createElementNS(NS,tag);
-  for(const[k,v] of Object.entries(a)) e.setAttribute(k,v);
-  return e;
-}
-
-function showFinalGarden(){
-  showScreen('screen-garden');
-  const svg = document.getElementById('final-garden-svg');
-  buildFinalGarden(svg);
-  setTimeout(()=>{
-    document.getElementById('final-message').classList.add('show');
-  }, 4000);
-}
-
-function buildFinalGarden(svg){
-  const defs=svgEl('defs');
-
-  [
-    {id:'gf-pink',col:'#f472b6',dev:10},
-    {id:'gf-rose',col:'#fda4af',dev:8},
-    {id:'gf-teal',col:'#2dd4bf',dev:8},
-    {id:'gf-green',col:'#22c55e',dev:6},
-    {id:'gf-gold',col:'#fbbf24',dev:9},
-  ].forEach(({id,col,dev})=>{
-    const f=svgEl('filter',{id,x:'-60%',y:'-60%',width:'220%',height:'220%'});
-    const b=svgEl('feGaussianBlur',{in:'SourceGraphic',stdDeviation:dev,result:'blur'});
-    const fl=svgEl('feFlood',{'flood-color':col,'flood-opacity':'0.85',result:'c'});
-    const co=svgEl('feComposite',{in:'c',in2:'blur',operator:'in',result:'g'});
-    const m=svgEl('feMerge');
-    m.appendChild(svgEl('feMergeNode',{in:'g'}));
-    m.appendChild(svgEl('feMergeNode',{in:'SourceGraphic'}));
-    [b,fl,co,m].forEach(n=>f.appendChild(n));
-    defs.appendChild(f);
+  // Stem grows
+  at(500,()=>{
+    const grow=()=>{
+      daisy.stemH=Math.min(daisy.stemH+daisy.maxStemH*0.018,daisy.maxStemH);
+      burst(daisy.x+rand(-6,6),daisy.y-daisy.stemH,1,['#6ecf3a','#a0e060','#ccff80'],{r:2,decay:0.03,upward:1,maxSpd:2,minSpd:0.5,glow:true});
+      if(daisy.stemH<daisy.maxStemH) requestAnimationFrame(grow);
+      else bloomPetals();
+    };
+    requestAnimationFrame(grow);
   });
 
-  const rad=(id,c1,c2,c3)=>{
-    const g=svgEl('radialGradient',{id,cx:'50%',cy:'40%',r:'65%'});
-    [[0,c1],[50,c2],[100,c3]].forEach(([off,col])=>g.appendChild(svgEl('stop',{offset:`${off}%`,'stop-color':col})));
-    defs.appendChild(g);
-  };
-  rad('fp-outer','#fce7f3','#f9a8d4','#ec4899');
-  rad('fp-mid','#fda4af','#f472b6','#db2777');
-  rad('fp-inner','#fbcfe8','#f9a8d4','#f472b6');
-  rad('fp-ctr','#fff7ed','#fef08a','#fbbf24');
-  rad('fl-teal','#a5f3fc','#2dd4bf','#0891b2');
-  rad('fl-green','#4ade80','#16a34a','#14532d');
-  const sg=svgEl('linearGradient',{id:'fs-g',x1:'0',y1:'0',x2:'1',y2:'0'});
-  [['0%','#15803d'],['50%','#4ade80'],['100%','#15803d']].forEach(([o,c])=>sg.appendChild(svgEl('stop',{offset:o,'stop-color':c})));
-  defs.appendChild(sg);
-  svg.appendChild(defs);
+  function bloomPetals(){
+    const bloom=()=>{
+      daisy.petalScale=Math.min(daisy.petalScale+0.03,1);
+      if(daisy.petalScale<1) requestAnimationFrame(bloom);
+      else{
+        burst(daisy.x,daisy.y-daisy.stemH,24,['#fffde0','#ffe566','#fff8a0','#ffffff'],{r:3,decay:0.018,upward:2,maxSpd:4,glow:true});
+        showCap('Eine Gänseblume wächst …',3000);
+        at(2000,startBirdMorph);
+      }
+    };
+    requestAnimationFrame(bloom);
+  }
 
-  const baseY=615;
+  // ─ CHAPTER 2: Daisy → Bird ───────────────── t≈3.5s
+  function startBirdMorph(){
+    showCap('Und verwandelt sich …',2500);
+    // Daisy fades, petals burst
+    const fadeD=()=>{
+      daisy.alpha=Math.max(daisy.alpha-0.025,0);
+      daisy.petalScale*=1.04;
+      if(daisy.alpha>0) requestAnimationFrame(fadeD);
+      else daisy.alive=false;
+    };
+    requestAnimationFrame(fadeD);
 
-  // Grass
-  [
-    [55,115,-18,'#15803d'],[78,98,10,'#166534'],[125,135,-12,'#15803d'],
-    [152,85,14,'#14532d'],[710,105,12,'#15803d'],[738,122,-9,'#166534'],
-    [805,92,16,'#15803d'],[828,108,-13,'#14532d'],[195,72,6,'#166534'],
-    [660,78,-6,'#166534'],[435,68,9,'#15803d'],[462,83,-7,'#14532d'],
-  ].forEach(([x,h,lean,col])=>{
-    const g=svgEl('g');
-    const blade=svgEl('path',{d:`M${x},${baseY} Q${x+lean},${baseY-h*0.55} ${x+lean*2},${baseY-h}`,stroke:col,'stroke-width':'2.5','stroke-linecap':'round',fill:'none',filter:'url(#gf-green)','stroke-dasharray':h*1.3,'stroke-dashoffset':h*1.3});
-    g.appendChild(blade); svg.appendChild(g);
-    setTimeout(()=>{
-      blade.style.transition=`stroke-dashoffset 750ms cubic-bezier(0.25,0.46,0.45,0.94)`;
-      blade.setAttribute('stroke-dashoffset','0');
-    }, 300+Math.random()*600);
-  });
+    // Massive burst
+    burst(cx,daisy.y-daisy.stemH,40,['#fffde0','#ffe566','#f0c000','#ffffff','#ffaaaa'],{r:4,decay:0.012,upward:3,maxSpd:6,glow:true});
 
-  // Plants
-  [
-    {x:355,h:295,r:40,w:8,side:-1,lc:3,d:600},
-    {x:435,h:330,r:46,w:9,side:1,lc:3,d:750},
-    {x:505,h:268,r:36,w:7,side:-1,lc:2,d:900},
-    {x:298,h:212,r:31,w:6,side:1,lc:2,d:1000},
-    {x:575,h:202,r:29,w:5,side:-1,lc:2,d:1050},
-  ].forEach(({x,h,r,w,side,lc,d})=>{
-    // stem
-    const sg2=svgEl('g');
-    const cx=x+(Math.random()-0.5)*16;
-    const stem=svgEl('path',{d:`M${x},${baseY} Q${cx},${baseY-h*0.5} ${x},${baseY-h}`,stroke:'url(#fs-g)','stroke-width':w,'stroke-linecap':'round',fill:'none',filter:'url(#gf-green)','stroke-dasharray':h*1.5,'stroke-dashoffset':h*1.5});
-    sg2.appendChild(stem); svg.appendChild(sg2);
-    setTimeout(()=>{
-      stem.style.transition=`stroke-dashoffset ${700+h}ms cubic-bezier(0.25,0.46,0.45,0.94)`;
-      stem.setAttribute('stroke-dashoffset','0');
-    },d);
-
-    // leaves
-    for(let li=0;li<lc;li++){
-      const lx=x+side*8, ly=baseY-h*(0.3+li*0.28);
-      const lang=side*(38+li*12);
-      const lg=svgEl('g',{transform:`translate(${lx},${ly}) rotate(${lang}) scale(${1+li*0.08})`});
-      const lp=svgEl('path',{d:'M0,0 C12,-22 36,-28 22,-6 C36,-22 28,12 0,0 Z',fill:'url(#fl-teal)',filter:'url(#gf-teal)',opacity:'0'});
-      lg.appendChild(lp); svg.appendChild(lg);
-      setTimeout(()=>{ lp.style.transition='opacity 0.75s ease'; lp.setAttribute('opacity','1'); }, d+500+li*220);
-    }
-
-    // peony
-    const flower=makeSvgPeony(x,baseY-h-2,r);
-    svg.appendChild(flower);
-    setTimeout(()=>{
-      flower.setAttribute('opacity','1');
-      let s=0.05,v=0;
-      const tf=`translate(${x},${baseY-h-2})`;
-      const tick=()=>{
-        v+=(1-s)*0.15;v*=0.72;s+=v;
-        flower.setAttribute('transform',`${tf} scale(${s.toFixed(4)})`);
-        if(Math.abs(1-s)>0.002||Math.abs(v)>0.001) requestAnimationFrame(tick);
-        else flower.setAttribute('transform',tf);
+    // Bird appears
+    at(800,()=>{
+      bird.alive=true;
+      bird.x=cx; bird.y=H*0.38;
+      bird.scale=0; bird.alpha=1;
+      bird.colorT=0;
+      const growB=()=>{
+        bird.scale=Math.min(bird.scale+0.04,1);
+        if(bird.scale<1) requestAnimationFrame(growB);
+        else{
+          showCap('Ein Vogel in leuchtenden Farben',2500);
+          at(2200,spawnButterfly);
+        }
       };
-      requestAnimationFrame(tick);
-    }, d+950+h*0.4);
-  });
+      requestAnimationFrame(growB);
+    });
+  }
 
-  // big teal leaves
-  [
-    {x:242,y:baseY-128,ang:-32,s:2.6,gr:'url(#fl-teal)',gl:'url(#gf-teal)'},
-    {x:272,y:baseY-84,ang:-55,s:2.3,gr:'url(#fl-teal)',gl:'url(#gf-teal)'},
-    {x:602,y:baseY-108,ang:32,s:2.5,gr:'url(#fl-teal)',gl:'url(#gf-teal)'},
-    {x:570,y:baseY-70,ang:52,s:2.1,gr:'url(#fl-teal)',gl:'url(#gf-teal)'},
-    {x:385,y:baseY-64,ang:-22,s:2.0,gr:'url(#fl-green)',gl:'url(#gf-green)'},
-    {x:460,y:baseY-54,ang:26,s:2.0,gr:'url(#fl-green)',gl:'url(#gf-green)'},
-  ].forEach(({x,y,ang,s,gr,gl},ti)=>{
-    const lg=svgEl('g',{transform:`translate(${x},${y}) rotate(${ang}) scale(${s})`});
-    const lp=svgEl('path',{d:'M0,0 C12,-22 36,-28 22,-6 C36,-22 28,12 0,0 Z',fill:gr,filter:gl,opacity:'0'});
-    lg.appendChild(lp); svg.appendChild(lg);
-    setTimeout(()=>{ lp.style.transition='opacity 0.75s ease'; lp.setAttribute('opacity','1'); }, 1200+ti*150);
-  });
+  // ─ CHAPTER 3: Butterfly from bird's mouth ── t≈7s
+  function spawnButterfly(){
+    showCap('Aus seinem Schnabel …',2000);
+    at(800,()=>{
+      showCap('… entfaltet sich ein Schmetterling ✨',3000);
+      const bx=bird.x+22, by=bird.y-34;
+      mainButterfly=new Butterfly(bx,by,{
+        hue:280, sparkle:true, sparkleAmt:0.8,
+        vx:2, vy:-2, targetScale:1.0,
+        state:'fly',
+      });
+      butterflies.push(mainButterfly);
 
-  // floating particles on garden screen
-  setTimeout(()=>spawnGardenParticles(),400);
-}
+      // Bird fades out gently
+      at(1500,()=>{
+        const fadeB=()=>{
+          bird.alpha=Math.max(bird.alpha-0.018,0);
+          if(bird.alpha>0) requestAnimationFrame(fadeB);
+          else bird.alive=false;
+        };
+        requestAnimationFrame(fadeB);
+      });
 
-function makeSvgPeony(cx,cy,r){
-  const g=svgEl('g',{transform:`translate(${cx},${cy})`,opacity:'0'});
-  // Layer 1 – 6 outer
-  for(let i=0;i<6;i++){
-    const pg=svgEl('g',{transform:`rotate(${i*60})`});
-    pg.appendChild(svgEl('path',{d:`M0,0 C${-r*0.32},${-r*0.38} ${-r*0.28},${-r*0.92} 0,${-r} C${r*0.28},${-r*0.92} ${r*0.32},${-r*0.38} 0,0 Z`,fill:'url(#fp-outer)',filter:'url(#gf-pink)',opacity:'0.88'}));
-    g.appendChild(pg);
-  }
-  // Layer 2 – 6 mid
-  for(let i=0;i<6;i++){
-    const r2=r*0.76,pg=svgEl('g',{transform:`rotate(${i*60+30})`});
-    pg.appendChild(svgEl('path',{d:`M0,0 C${-r2*0.28},${-r2*0.36} ${-r2*0.22},${-r2*0.90} 0,${-r2} C${r2*0.22},${-r2*0.90} ${r2*0.28},${-r2*0.36} 0,0 Z`,fill:'url(#fp-mid)',filter:'url(#gf-pink)',opacity:'0.92'}));
-    g.appendChild(pg);
-  }
-  // Layer 3 – 7 inner
-  for(let i=0;i<7;i++){
-    const r3=r*0.52,pg=svgEl('g',{transform:`rotate(${i*(360/7)+8})`});
-    pg.appendChild(svgEl('path',{d:`M0,0 C${-r3*0.24},${-r3*0.34} ${-r3*0.18},${-r3*0.87} 0,${-r3} C${r3*0.18},${-r3*0.87} ${r3*0.24},${-r3*0.34} 0,0 Z`,fill:'url(#fp-inner)',filter:'url(#gf-rose)',opacity:'0.96'}));
-    g.appendChild(pg);
-  }
-  // Layer 4 – tiny ruffles
-  for(let i=0;i<10;i++){
-    const r4=r*0.28,pg=svgEl('g',{transform:`rotate(${i*36})`});
-    pg.appendChild(svgEl('ellipse',{cx:0,cy:-r4,rx:r4*0.26,ry:r4*0.42,fill:'url(#fp-inner)',opacity:'0.9'}));
-    g.appendChild(pg);
-  }
-  // Center
-  g.appendChild(svgEl('circle',{cx:0,cy:0,r:r*0.18,fill:'url(#fp-ctr)',filter:'url(#gf-gold)',opacity:'0.95'}));
-  for(let i=0;i<8;i++){
-    const a=i*45,r5=r*0.22;
-    g.appendChild(svgEl('circle',{cx:Math.cos(a*Math.PI/180)*r5,cy:Math.sin(a*Math.PI/180)*r5,r:r*0.04,fill:'#fbbf24',opacity:'0.8'}));
-  }
-  return g;
-}
+      // Main butterfly drifts, then seeks cone
+      at(1200,()=>showCap('Er glitzert und funkelt …',2000));
+      at(2500,()=>{
+        // Spawn cone
+        cone.alive=true;
+        cone.x=cx+160; cone.y=H*0.5;
+        cone.alpha=0; cone.scale=0;
+        const coneIn=()=>{
+          cone.scale=Math.min(cone.scale+0.04,1);
+          cone.alpha=Math.min(cone.alpha+0.04,1);
+          if(cone.scale<1) requestAnimationFrame(coneIn);
+        };
+        requestAnimationFrame(coneIn);
+        showCap('Ein roter Kegel erscheint …',2000);
 
-function spawnGardenParticles(){
-  ['#f472b6','#fda4af','#2dd4bf','#4ade80','#fbbf24'].forEach(c=>{
+        // Main butterfly seeks cone
+        at(1000,()=>{
+          if(mainButterfly){
+            mainButterfly.state='seeking';
+            mainButterfly.target={x:cone.x,y:cone.y};
+            mainButterfly.vx=0; mainButterfly.vy=0;
+          }
+          showCap('Der Schmetterling fliegt hinein …',2500);
+
+          // When butterfly reaches cone (approx timing)
+          at(2200,()=>{
+            showCap('… und kommt noch strahlender heraus!',3000);
+            // Cone flash
+            burst(cone.x,cone.y,30,['#ff4444','#ff8888','#ffcc44','#ffffff','#ffaaaa'],{r:5,decay:0.015,upward:2,maxSpd:5,glow:true});
+
+            // New sparkly butterfly emerges
+            const newB=new Butterfly(cone.x,cone.y,{
+              hue:280,sparkle:true,sparkleAmt:2,
+              vx:-2,vy:-2,targetScale:1.1,state:'wandering',
+            });
+            newB.wanderAng=Math.PI;
+            butterflies.push(newB);
+            mainButterfly=newB;
+
+            // Hide cone
+            at(500,()=>{
+              const fadeC=()=>{
+                cone.alpha=Math.max(cone.alpha-0.03,0);
+                if(cone.alpha>0) requestAnimationFrame(fadeC);
+                else cone.alive=false;
+              };
+              requestAnimationFrame(fadeC);
+            });
+
+            at(1500,()=>spawnMoreButterflies(newB));
+          });
+        });
+      });
+    });
+  }
+
+  // ─ CHAPTER 4: 5 more butterflies ──────────── t≈14s
+  function spawnMoreButterflies(leader){
+    showCap('Fünf weitere Schmetterlinge kommen …',3000);
+    const hues=[0,60,120,180,40];
     for(let i=0;i<5;i++){
-      const p=document.createElement('div'); p.className='particle';
-      const sz=Math.random()*5+2;
-      p.style.cssText=`width:${sz}px;height:${sz}px;background:${c};box-shadow:0 0 ${sz*3}px ${c};position:fixed;left:${10+Math.random()*80}%;top:${5+Math.random()*80}%;--dur:${(Math.random()*3+2).toFixed(1)}s;--op:${(Math.random()*0.5+0.15).toFixed(2)};animation-delay:${(Math.random()*3).toFixed(1)}s;`;
-      document.body.appendChild(p);
+      at(i*350,()=>{
+        const b=new Butterfly(cone.x+rand(-30,30),cone.y+rand(-20,20),{
+          hue:hues[i],sparkle:true,sparkleAmt:0.6,
+          vx:rand(-2.5,2.5),vy:rand(-3,-1),
+          targetScale:0.9+rand(0,0.3),state:'wandering',
+        });
+        b.wanderAng=rand(0,tau);
+        butterflies.push(b);
+      });
     }
-  });
+
+    at(2500,()=>{
+      showCap('Zusammen tanzen sie durch die Nacht …',3000);
+      at(3200,startSunrise);
+    });
+  }
+
+  // ─ CHAPTER 5: Sunrise ────────────────────── t≈20s
+  function startSunrise(){
+    showCap('Die Sonne geht auf …',3000);
+    const riseSpd=0.003;
+    const riseLoop=()=>{
+      ground.sunRise=Math.min(ground.sunRise+riseSpd,1);
+      if(ground.sunRise<1) requestAnimationFrame(riseLoop);
+      else at(1000,startSplit);
+    };
+    requestAnimationFrame(riseLoop);
+  }
+
+  // ─ CHAPTER 6: World splits ─────────────────
+  function startSplit(){
+    showCap('Die Welt teilt sich …',2500);
+    const splitLoop=()=>{
+      ground.split=Math.min(ground.split+0.012,1);
+      if(ground.split<1) requestAnimationFrame(splitLoop);
+      else at(1200,launchBearBirthdayConfetti);
+    };
+    requestAnimationFrame(splitLoop);
+  }
+
+  // ─ CHAPTER 7: Confetti → Bears ─────────────
+  function launchBearBirthdayConfetti(){
+    showCap('Die Schmetterlinge werden zu Konfetti …',3000);
+    // Butterflies turn into confetti bursts
+    butterflies.forEach(b=>{
+      burst(b.x,b.y,15,[
+        `hsl(${b.hue},90%,65%)`,`hsl(${b.hue+60},90%,70%)`,'#ffffff',
+      ],{r:5,decay:0.008,gravity:0.1,shape:'confetti',glow:false,maxSpd:4,upward:2});
+      b.targetAlpha=0;
+      b.targetScale=0;
+    });
+
+    launchConfetti(250);
+
+    at(1200,()=>{
+      showCap('… und landen auf zwei Bären 🐻🐻‍❄️',3000);
+      bears.alive=true;
+      const fadeIn=()=>{
+        bears.alpha=Math.min(bears.alpha+0.025,1);
+        if(bears.alpha<1) requestAnimationFrame(fadeIn);
+        else at(2000,celebrate);
+      };
+      requestAnimationFrame(fadeIn);
+    });
+  }
+
+  // ─ CHAPTER 8: Celebration ─────────────────
+  function celebrate(){
+    showCap('Alles Gute zum Geburtstag, Eisbär! 🎉🎂',0);
+    launchConfetti(300);
+    at(2000,()=>launchConfetti(200));
+    at(4000,()=>launchConfetti(200));
+    // Periodic confetti
+    let ceCount=0;
+    const ceBurst=()=>{
+      launchConfetti(80);
+      burst(rand(W*0.2,W*0.8),H*0.4,20,['#f43f5e','#eab308','#22c55e','#8b5cf6','#ffffff'],{r:6,decay:0.008,upward:4,maxSpd:5,glow:true});
+      ceCount++;
+      if(ceCount<6) at(2000,ceBurst);
+    };
+    at(1000,ceBurst);
+  }
 }
 
-function spawnFallingPetals(){
-  ['🌸','✿','❀','🌷'].forEach(sym=>{
-    for(let j=0;j<4;j++){
-      const p=document.createElement('div'); p.className='petal-fall';
-      p.textContent=sym;
-      p.style.cssText=`left:${5+Math.random()*90}%;--fdur:${(7+Math.random()*9).toFixed(1)}s;animation-delay:${(Math.random()*10).toFixed(1)}s;`;
-      document.body.appendChild(p);
-    }
-  });
-}
+document.getElementById('start-btn').addEventListener('click', startStory);
 </script>
 </body>
 </html>
