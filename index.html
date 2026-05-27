@@ -1,1258 +1,951 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>eine Geschichte 🌼</title>
+<title>LAINTANIA.NET — CityBuild Network</title>
+<meta name="description" content="Live dashboard for LAINTANIA.NET — a Minecraft CityBuild network. View server status, roadmap, and updates.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,400&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+
+:root{
+  --white:#ffffff;
+  --off:#FAFAF9;
+  --f1:#F4F4F2;
+  --f2:#EEECEA;
+  --f3:#E5E3DF;
+  --line:#E0DDD9;
+  --line2:#D0CEC9;
+  --t1:#111110;
+  --t2:#5C5A56;
+  --t3:#9B9892;
+  --t4:#C3C0BB;
+  --green:#1A7A4A;
+  --green-bg:#EAF4EE;
+  --green-mid:#2EA86A;
+  --blue:#1060C8;
+  --blue-bg:#EBF1FC;
+  --amber:#9A5A00;
+  --amber-bg:#FDF3E3;
+  --red:#C23535;
+  --red-bg:#FDEAEA;
+  --purple:#6140B0;
+  --purple-bg:#F0EDFB;
+  --radius:10px;
+  --radius-lg:16px;
+  --radius-xl:20px;
+}
 
 body{
-  background:#04020a;
+  background:var(--white);
+  color:var(--t1);
+  font-family:'Figtree',sans-serif;
+  font-size:15px;
+  line-height:1.6;
   min-height:100vh;
-  overflow:hidden;
-  font-family:'Cormorant Garamond',serif;
-  color:#fce7f3;
+  overflow-x:hidden;
 }
 
-canvas{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  z-index:1;
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(24px) saturate(1.8);
+  -webkit-backdrop-filter:blur(24px) saturate(1.8);
+  border-bottom:1px solid var(--line);
 }
+.nav-inner{
+  max-width:1080px;margin:0 auto;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:52px;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:9px;
+  font-weight:700;font-size:15px;letter-spacing:-.01em;
+  color:var(--t1);text-decoration:none;
+}
+.live-pip{
+  width:7px;height:7px;border-radius:50%;
+  background:#22C55E;
+  box-shadow:0 0 0 3px rgba(34,197,94,.18);
+  animation:breathe 2.4s ease-in-out infinite;
+}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,.18)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.08)}}
+.nav-links{display:flex;align-items:center;gap:2px}
+.nav-links a{
+  font-size:13.5px;font-weight:400;color:var(--t2);
+  text-decoration:none;padding:5px 11px;border-radius:7px;
+  transition:color .15s,background .15s;
+}
+.nav-links a:hover{color:var(--t1);background:var(--f1)}
+.nav-cta{
+  font-size:13px;font-weight:500;
+  padding:6px 16px;border-radius:8px;
+  background:var(--t1);color:var(--white);
+  border:none;cursor:pointer;
+  transition:background .15s,transform .1s;
+  letter-spacing:.005em;
+}
+.nav-cta:hover{background:#2a2a27;transform:translateY(-1px)}
 
-#ui{
-  position:fixed;
-  inset:0;
-  z-index:20;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-}
+/* CONTAINER */
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
 
-#start-btn{
-  pointer-events:auto;
-  padding:18px 52px;
-  background:transparent;
-  border:1.5px solid rgba(255,220,100,0.45);
-  color:rgba(255,240,200,0.9);
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.25rem;
-  font-style:italic;
-  letter-spacing:0.1em;
-  border-radius:50px;
-  cursor:pointer;
-  transition:all 0.3s;
-  animation:btn-glow 3s ease-in-out infinite;
-}
-#start-btn:hover{
-  background:rgba(255,220,100,0.08);
-  border-color:rgba(255,220,100,0.85);
-  box-shadow:0 0 36px rgba(255,210,80,0.3);
-  transform:scale(1.05);
-}
-@keyframes btn-glow{
-  0%,100%{box-shadow:0 0 14px rgba(255,210,80,0.1);}
-  50%{box-shadow:0 0 30px rgba(255,210,80,0.28);}
-}
-#start-btn.fade-out{
-  animation:btn-fade 0.5s ease forwards;
-  pointer-events:none;
-}
-@keyframes btn-fade{to{opacity:0;transform:scale(0.8);}}
-
-#caption{
-  position:fixed;
-  bottom:32px;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:25;
-  font-size:1.05rem;
-  font-style:italic;
-  letter-spacing:0.06em;
-  color:rgba(255,240,220,0.7);
+/* HERO */
+.hero{
+  padding:130px 0 72px;
   text-align:center;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 0.8s ease;
-  text-shadow:0 0 20px rgba(255,200,100,0.4);
-  white-space:nowrap;
 }
-#caption.show{opacity:1;}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--t3);border:1px solid var(--line2);
+  border-radius:20px;padding:5px 14px;margin-bottom:28px;
+  background:var(--f1);
+}
+.hero-tag .red-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:#EF4444;animation:breathe2 1.4s ease-in-out infinite;
+}
+@keyframes breathe2{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(44px,5.5vw,68px);
+  font-weight:400;line-height:1.05;
+  letter-spacing:-.025em;
+  color:var(--t1);
+  margin-bottom:20px;
+}
+.hero h1 em{font-style:italic;color:var(--green-mid)}
+.hero-sub{
+  font-size:17px;font-weight:300;
+  color:var(--t2);max-width:440px;
+  margin:0 auto 36px;line-height:1.7;
+}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Figtree',sans-serif;font-size:14px;font-weight:500;
+  padding:11px 22px;border-radius:10px;
+  text-decoration:none;cursor:pointer;border:none;
+  transition:all .18s;letter-spacing:.01em;
+}
+.btn-black{background:var(--t1);color:var(--white)}
+.btn-black:hover{background:#2a2a27;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--line2)}
+.btn-ghost:hover{background:var(--f1);color:var(--t1);border-color:var(--line2)}
+
+/* STAT STRIP */
+.stat-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--line);border-radius:var(--radius-xl);
+  overflow:hidden;margin-bottom:80px;
+  background:var(--white);
+}
+.stat-cell{
+  padding:26px 28px;
+  border-right:1px solid var(--line);
+  position:relative;
+}
+.stat-cell:last-child{border-right:none}
+.stat-cell-label{
+  font-size:11px;font-weight:500;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--t3);margin-bottom:8px;
+}
+.stat-cell-val{
+  font-size:26px;font-weight:700;letter-spacing:-.02em;
+  color:var(--t1);line-height:1;margin-bottom:7px;
+}
+.stat-cell-val.green{color:var(--green-mid)}
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:500;padding:3px 9px;
+  border-radius:20px;
+}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-gray{background:var(--f2);color:var(--t3)}
+
+/* SECTION */
+.section{margin-bottom:80px}
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--line);
+}
+.section-title{
+  font-size:16px;font-weight:600;letter-spacing:-.01em;color:var(--t1);
+}
+.section-caption{font-size:13px;color:var(--t3)}
+.section-link{
+  font-size:13px;color:var(--t3);text-decoration:none;
+  transition:color .15s;
+}
+.section-link:hover{color:var(--t1)}
+
+/* ROADMAP BOARD */
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
+.col-head{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 12px;border-radius:8px;
+  background:var(--f1);margin-bottom:8px;
+}
+.col-pip{width:6px;height:6px;border-radius:50%}
+.pip-gray{background:var(--t4)}
+.pip-blue{background:var(--blue)}
+.pip-amber{background:#F59E0B}
+.pip-green{background:var(--green-mid)}
+.col-name{
+  font-size:11px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--t2);
+}
+.col-num{
+  margin-left:auto;font-size:11px;
+  color:var(--t4);
+  background:var(--white);
+  padding:1px 7px;border-radius:8px;
+  border:1px solid var(--line);
+}
+.card{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:16px;margin-bottom:8px;
+  transition:border-color .18s,box-shadow .18s;
+}
+.card:hover{border-color:var(--line2);box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.card.progress{border-left:2px solid var(--blue)}
+.card.done{opacity:.55}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.tag{
+  font-size:10px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;padding:2px 7px;border-radius:5px;
+}
+.tag-feat{background:var(--green-bg);color:var(--green)}
+.tag-infra{background:var(--blue-bg);color:var(--blue)}
+.tag-fix{background:var(--amber-bg);color:var(--amber)}
+.tag-content{background:var(--purple-bg);color:var(--purple)}
+.card-title{font-size:13.5px;font-weight:500;color:var(--t1);line-height:1.4;margin-bottom:5px}
+.card-desc{font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:10px}
+.card-foot{display:flex;align-items:center;justify-content:space-between}
+.pri{
+  font-size:10px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;padding:2px 8px;border-radius:5px;
+}
+.pri-high{background:var(--red-bg);color:var(--red)}
+.pri-med{background:var(--amber-bg);color:var(--amber)}
+.pri-low{background:var(--f2);color:var(--t3)}
+.card-date{font-size:11px;color:var(--t4)}
+
+/* CHART */
+.chart-wrap{
+  background:var(--white);border:1px solid var(--line);
+  border-radius:var(--radius-xl);padding:28px 32px;
+}
+.chart-top{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:24px;flex-wrap:wrap;gap:12px;
+}
+.chart-lbl{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-bottom:5px}
+.chart-num{font-size:32px;font-weight:700;letter-spacing:-.03em;color:var(--t1)}
+.range-tabs{
+  display:flex;background:var(--f1);
+  border-radius:8px;padding:3px;gap:2px;
+  border:1px solid var(--line);
+}
+.rtab{
+  font-size:12px;font-weight:500;padding:4px 12px;border-radius:6px;
+  border:none;background:transparent;color:var(--t3);
+  cursor:pointer;transition:all .15s;
+}
+.rtab.on{background:var(--white);color:var(--t1);border:1px solid var(--line2)}
+.chart-area{height:190px;position:relative;margin:0 -4px}
+svg.csf{width:100%;height:100%;overflow:visible}
+.chart-note{font-size:11px;color:var(--t4);margin-top:12px;display:flex;align-items:center;gap:5px}
+
+/* UPDATES */
+.updates-grid{display:grid;grid-template-columns:1.55fr 1fr;gap:12px}
+.upcard{
+  background:var(--white);border:1px solid var(--line);
+  border-radius:var(--radius-lg);padding:24px;
+  transition:border-color .18s;
+}
+.upcard:hover{border-color:var(--line2)}
+.upcard.pinned{border-color:var(--green-mid);border-top-width:2px}
+.up-eyebrow{display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.ubadge{
+  font-size:10px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 8px;border-radius:5px;
+}
+.ub-green{background:var(--green-bg);color:var(--green)}
+.ub-blue{background:var(--blue-bg);color:var(--blue)}
+.ub-amber{background:var(--amber-bg);color:var(--amber)}
+.ub-gray{background:var(--f2);color:var(--t3)}
+.up-date{font-size:12px;color:var(--t4)}
+.up-title{
+  font-size:17px;font-weight:600;letter-spacing:-.01em;
+  color:var(--t1);margin-bottom:8px;line-height:1.3;
+}
+.up-body{font-size:14px;color:var(--t2);line-height:1.65}
+.up-foot{margin-top:16px;display:flex;align-items:center;gap:9px}
+.author{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t3)}
+.avatar{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--t1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;font-weight:700;color:var(--white);
+}
+.updates-side{display:flex;flex-direction:column;gap:8px}
+.mini{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--white);border:1px solid var(--line);
+  border-radius:var(--radius);padding:14px 16px;
+  transition:border-color .18s;
+}
+.mini:hover{border-color:var(--line2)}
+.mini-bar{width:2px;flex-shrink:0;border-radius:2px;align-self:stretch;min-height:36px}
+.mini-title{font-size:13px;font-weight:500;color:var(--t1);margin-bottom:2px;line-height:1.4}
+.mini-date{font-size:11px;color:var(--t4)}
+
+/* EVENTS */
+.events{display:flex;flex-direction:column;gap:8px}
+.ev{
+  display:flex;align-items:center;gap:18px;
+  background:var(--white);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px 20px;
+  transition:border-color .18s;
+}
+.ev:hover{border-color:var(--line2)}
+.ev-date{flex-shrink:0;text-align:center;width:42px}
+.ev-day{font-size:22px;font-weight:700;color:var(--t1);line-height:1}
+.ev-mon{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t4);margin-top:1px}
+.ev-rule{width:1px;background:var(--line);height:32px;flex-shrink:0}
+.ev-info{flex:1}
+.ev-title{font-size:14px;font-weight:500;color:var(--t1);margin-bottom:2px}
+.ev-desc{font-size:12px;color:var(--t3)}
+.ev-tag{
+  flex-shrink:0;font-size:10px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;
+  padding:3px 9px;border-radius:5px;
+}
+.ev-maint{background:var(--amber-bg);color:var(--amber)}
+.ev-event{background:var(--blue-bg);color:var(--blue)}
+.ev-release{background:var(--green-bg);color:var(--green)}
+
+/* CHANGELOG */
+.clog{display:flex;flex-direction:column}
+.cl{
+  display:flex;gap:24px;padding:20px 0;
+  border-bottom:1px solid var(--line);
+}
+.cl:last-child{border-bottom:none}
+.cl-ver{flex-shrink:0;width:72px}
+.cl-v{font-size:13.5px;font-weight:700;color:var(--green-mid)}
+.cl-d{font-size:11px;color:var(--t4);margin-top:2px}
+.cl-body{flex:1}
+.cl-h{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:7px}
+.cl-list{list-style:none;display:flex;flex-direction:column;gap:3px}
+.cl-list li{
+  font-size:13px;color:var(--t2);
+  display:flex;align-items:baseline;gap:8px;
+}
+.cl-list li::before{content:'–';color:var(--t4);flex-shrink:0}
+
+/* ADMIN MODAL */
+.overlay{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(250,250,249,.82);
+  backdrop-filter:blur(16px);
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+.overlay.open{display:flex}
+.modal{
+  background:var(--white);
+  border:1px solid var(--line2);
+  border-radius:var(--radius-xl);
+  padding:36px 40px;width:100%;max-width:380px;
+  box-shadow:0 20px 60px rgba(0,0,0,.1);
+  position:relative;
+}
+.modal-h{font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--t1);margin-bottom:4px}
+.modal-sub{font-size:14px;color:var(--t2);margin-bottom:24px}
+.field{margin-bottom:14px}
+.field label{
+  display:block;font-size:12px;font-weight:500;
+  color:var(--t2);letter-spacing:.03em;margin-bottom:5px;
+}
+.field input{
+  width:100%;background:var(--f1);
+  border:1px solid var(--line2);border-radius:8px;
+  padding:10px 13px;font-family:'Figtree',sans-serif;
+  font-size:14px;color:var(--t1);outline:none;
+  transition:border-color .15s,background .15s;
+}
+.field input:focus{border-color:var(--t1);background:var(--white)}
+.field input::placeholder{color:var(--t4)}
+.mclose{
+  position:absolute;top:14px;right:14px;
+  background:var(--f1);border:1px solid var(--line);
+  border-radius:7px;color:var(--t3);
+  cursor:pointer;font-size:16px;line-height:1;
+  transition:all .15s;padding:5px 8px;
+}
+.mclose:hover{background:var(--f2);color:var(--t1)}
+.modal-note{font-size:12px;color:var(--t4);margin-top:10px;text-align:center}
+
+/* ADMIN BANNER */
+.admin-bar{
+  background:var(--green-bg);
+  border-bottom:1px solid rgba(46,168,106,.2);
+  padding:9px 28px;
+  display:none;align-items:center;justify-content:space-between;
+  position:sticky;top:52px;z-index:99;
+}
+.admin-bar.on{display:flex}
+.admin-bar-text{font-size:13px;color:var(--green);font-weight:500}
+.admin-bar-btns{display:flex;gap:7px}
+.ab-btn{
+  font-size:12px;font-weight:500;
+  padding:4px 13px;border-radius:6px;
+  border:1px solid rgba(46,168,106,.3);
+  background:rgba(255,255,255,.6);color:var(--green);
+  cursor:pointer;transition:all .15s;
+}
+.ab-btn:hover{background:rgba(255,255,255,.9)}
+.ab-btn.danger{border-color:rgba(194,53,53,.25);background:rgba(255,255,255,.6);color:var(--red)}
+.ab-btn.danger:hover{background:rgba(255,255,255,.9)}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--line);
+  padding:36px 0;
+  background:var(--off);
+}
+.footer-inner{
+  max-width:1080px;margin:0 auto;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:14px;
+}
+.footer-logo{font-size:14px;font-weight:700;color:var(--t2)}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap}
+.footer-links a{
+  font-size:13px;color:var(--t3);text-decoration:none;transition:color .15s;
+}
+.footer-links a:hover{color:var(--t1)}
+.footer-right{font-size:12px;color:var(--t4)}
+
+/* SCROLL FADE */
+.fi{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease}
+.fi.vis{opacity:1;transform:translateY(0)}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .board{grid-template-columns:repeat(2,1fr)}
+  .stat-strip{grid-template-columns:repeat(2,1fr)}
+  .stat-cell:nth-child(2){border-right:none}
+  .stat-cell:nth-child(3){border-top:1px solid var(--line)}
+  .stat-cell:nth-child(4){border-top:1px solid var(--line);border-right:none}
+}
+@media(max-width:680px){
+  .updates-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .hero{padding:100px 0 56px}
+  .hero h1{font-size:38px}
+  .board{grid-template-columns:1fr}
+  .stat-strip{grid-template-columns:1fr}
+  .stat-cell{border-right:none;border-top:1px solid var(--line)}
+  .stat-cell:first-child{border-top:none}
+  .chart-wrap{padding:20px}
+}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div id="ui">
-  <button id="start-btn">die Geschichte beginnt 🌼</button>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="live-pip"></div>
+      LAINTANIA.NET
+    </a>
+    <div class="nav-links">
+      <a href="#roadmap">Roadmap</a>
+      <a href="#updates">Updates</a>
+      <a href="#stats">Statistics</a>
+      <a href="#events">Events</a>
+      <a href="#changelog">Changelog</a>
+    </div>
+    <button class="nav-cta" onclick="openModal()">Admin Login</button>
+  </div>
+</nav>
+
+<div class="admin-bar" id="adminBar">
+  <span class="admin-bar-text">Admin mode active — you can edit content</span>
+  <div class="admin-bar-btns">
+    <button class="ab-btn" onclick="alert('CMS editor would open here in production.')">+ New Item</button>
+    <button class="ab-btn danger" onclick="logoutAdmin()">Log out</button>
+  </div>
 </div>
-<div id="caption" id="cap"></div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-tag">
+      <span class="red-dot"></span>
+      CityBuild Network · Java Edition
+    </div>
+    <h1>Build. Connect.<br><em>Explore.</em></h1>
+    <p class="hero-sub">LAINTANIA.NET is a Minecraft CityBuild server where communities grow, cities rise, and every block has a story.</p>
+    <div class="hero-btns">
+      <a href="https://laintania.net" class="btn btn-black">
+        Join Server
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#roadmap" class="btn btn-ghost">View Roadmap</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section id="stats">
+  <div class="wrap">
+    <div class="stat-strip fi">
+      <div class="stat-cell">
+        <div class="stat-cell-label">Server Status</div>
+        <div class="stat-cell-val green" id="statusVal">Online</div>
+        <span class="badge badge-green" id="statusBadge">
+          <span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;animation:breathe2 1.5s ease-in-out infinite"></span>
+          Operational
+        </span>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-cell-label">Players Online</div>
+        <div class="stat-cell-val" id="playerCount">—</div>
+        <span class="badge badge-gray" id="playerMeta">Fetching…</span>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-cell-label">Peak Today</div>
+        <div class="stat-cell-val" id="peakVal">—</div>
+        <span class="badge badge-gray">Last 24 hours</span>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-cell-label">Version</div>
+        <div class="stat-cell-val" style="font-size:20px;padding-top:3px">1.21.x</div>
+        <span class="badge badge-gray">Java Edition</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Roadmap -->
+<section class="section" id="roadmap">
+  <div class="wrap">
+    <div class="section-header fi">
+      <span class="section-title">Roadmap</span>
+      <span class="section-caption">Updated May 2026</span>
+    </div>
+    <div class="board fi">
+
+      <!-- Planned -->
+      <div>
+        <div class="col-head">
+          <span class="col-pip pip-gray"></span>
+          <span class="col-name">Planned</span>
+          <span class="col-num">3</span>
+        </div>
+        <div class="card">
+          <div class="card-tags"><span class="tag tag-feat">Feature</span></div>
+          <div class="card-title">Player-owned shop districts</div>
+          <div class="card-desc">Dedicated market zones with plot rentals and custom signage for player stores.</div>
+          <div class="card-foot"><span class="pri pri-high">High</span><span class="card-date">Q3 2026</span></div>
+        </div>
+        <div class="card">
+          <div class="card-tags"><span class="tag tag-content">Content</span></div>
+          <div class="card-title">Seasonal events calendar</div>
+          <div class="card-desc">Themed community events tied to real-world seasons with exclusive rewards.</div>
+          <div class="card-foot"><span class="pri pri-med">Medium</span><span class="card-date">Q4 2026</span></div>
+        </div>
+        <div class="card">
+          <div class="card-tags"><span class="tag tag-infra">Infra</span></div>
+          <div class="card-title">Multi-world expansion</div>
+          <div class="card-desc">Additional themed worlds: creative, survival, and a fresh economy realm.</div>
+          <div class="card-foot"><span class="pri pri-low">Low</span><span class="card-date">2027</span></div>
+        </div>
+      </div>
+
+      <!-- In Progress -->
+      <div>
+        <div class="col-head">
+          <span class="col-pip pip-blue"></span>
+          <span class="col-name">In Progress</span>
+          <span class="col-num">4</span>
+        </div>
+        <div class="card progress">
+          <div class="card-tags"><span class="tag tag-infra">Infra</span></div>
+          <div class="card-title">Performance optimization pass</div>
+          <div class="card-desc">Reducing TPS drops during peak hours through chunk management and plugin profiling.</div>
+          <div class="card-foot"><span class="pri pri-high">High</span><span class="card-date">Jun 2026</span></div>
+        </div>
+        <div class="card progress">
+          <div class="card-tags"><span class="tag tag-feat">Feature</span></div>
+          <div class="card-title">City permit system</div>
+          <div class="card-desc">Formal in-game permit workflow for large builds, zoning, and urban expansion.</div>
+          <div class="card-foot"><span class="pri pri-high">High</span><span class="card-date">Jul 2026</span></div>
+        </div>
+        <div class="card progress">
+          <div class="card-tags"><span class="tag tag-content">Content</span></div>
+          <div class="card-title">NPC citizen roles</div>
+          <div class="card-desc">Background NPC citizens that populate city streets and interact with player builds.</div>
+          <div class="card-foot"><span class="pri pri-med">Medium</span><span class="card-date">Aug 2026</span></div>
+        </div>
+        <div class="card progress">
+          <div class="card-tags"><span class="tag tag-fix">Fix</span></div>
+          <div class="card-title">Economy rebalance</div>
+          <div class="card-desc">Adjusting shop prices, income rates, and inflation guards for long-term stability.</div>
+          <div class="card-foot"><span class="pri pri-med">Medium</span><span class="card-date">Jun 2026</span></div>
+        </div>
+      </div>
+
+      <!-- On Hold -->
+      <div>
+        <div class="col-head">
+          <span class="col-pip pip-amber"></span>
+          <span class="col-name">On Hold</span>
+          <span class="col-num">2</span>
+        </div>
+        <div class="card">
+          <div class="card-tags"><span class="tag tag-infra">Infra</span></div>
+          <div class="card-title">Discord economy bot</div>
+          <div class="card-desc">Paused pending Discord policy review for bot monetisation features.</div>
+          <div class="card-foot"><span class="pri pri-low">Low</span><span class="card-date">TBD</span></div>
+        </div>
+        <div class="card">
+          <div class="card-tags"><span class="tag tag-feat">Feature</span></div>
+          <div class="card-title">Player voting system</div>
+          <div class="card-desc">Community voting on proposed city changes. Awaiting governance rule design.</div>
+          <div class="card-foot"><span class="pri pri-low">Low</span><span class="card-date">TBD</span></div>
+        </div>
+      </div>
+
+      <!-- Done -->
+      <div>
+        <div class="col-head">
+          <span class="col-pip pip-green"></span>
+          <span class="col-name">Done</span>
+          <span class="col-num">4</span>
+        </div>
+        <div class="card done">
+          <div class="card-tags"><span class="tag tag-infra">Infra</span></div>
+          <div class="card-title">Server migration to new hardware</div>
+          <div class="card-foot"><span class="pri pri-high">High</span><span class="card-date">Apr 2026</span></div>
+        </div>
+        <div class="card done">
+          <div class="card-tags"><span class="tag tag-feat">Feature</span></div>
+          <div class="card-title">Custom resource pack v3</div>
+          <div class="card-foot"><span class="pri pri-med">Medium</span><span class="card-date">Mar 2026</span></div>
+        </div>
+        <div class="card done">
+          <div class="card-tags"><span class="tag tag-fix">Fix</span></div>
+          <div class="card-title">Anti-grief region overhaul</div>
+          <div class="card-foot"><span class="pri pri-high">High</span><span class="card-date">Feb 2026</span></div>
+        </div>
+        <div class="card done">
+          <div class="card-tags"><span class="tag tag-content">Content</span></div>
+          <div class="card-title">New spawn area redesign</div>
+          <div class="card-foot"><span class="pri pri-med">Medium</span><span class="card-date">Jan 2026</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Player Activity -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-header fi">
+      <span class="section-title">Player Activity</span>
+      <span class="section-caption">Historical data</span>
+    </div>
+    <div class="chart-wrap fi">
+      <div class="chart-top">
+        <div>
+          <div class="chart-lbl">Avg. concurrent players</div>
+          <div class="chart-num" id="chartAvg">24</div>
+        </div>
+        <div class="range-tabs">
+          <button class="rtab on" onclick="setRange('7d',this)">7D</button>
+          <button class="rtab" onclick="setRange('30d',this)">30D</button>
+          <button class="rtab" onclick="setRange('1y',this)">1Y</button>
+        </div>
+      </div>
+      <div class="chart-area">
+        <svg class="csf" id="chartSvg" viewBox="0 0 800 190" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="chart-note">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Data sourced from NameMC public player history API — refreshed every 15 minutes
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Updates -->
+<section class="section" id="updates">
+  <div class="wrap">
+    <div class="section-header fi">
+      <span class="section-title">Updates &amp; Announcements</span>
+      <a href="#" class="section-link">All updates →</a>
+    </div>
+    <div class="updates-grid fi">
+      <div class="upcard pinned">
+        <div class="up-eyebrow">
+          <span class="ubadge ub-green">Update</span>
+          <span class="ubadge ub-gray">📌 Pinned</span>
+          <span class="up-date">May 20, 2026</span>
+        </div>
+        <div class="up-title">Server hardware migration complete — performance significantly improved</div>
+        <div class="up-body">After weeks of preparation, we have successfully migrated to new dedicated hardware. Players should notice reduced lag, faster chunk loading, and improved TPS stability during peak hours. Thank you for your patience during the maintenance windows. The server is now running on NVMe SSDs with 2× the RAM.</div>
+        <div class="up-foot">
+          <div class="author">
+            <div class="avatar">L</div>
+            Laintania Team
+          </div>
+        </div>
+      </div>
+      <div class="updates-side">
+        <div class="mini">
+          <div class="mini-bar" style="background:var(--blue)"></div>
+          <div>
+            <div class="mini-title">Economy rebalance patch deployed — prices adjusted</div>
+            <div class="mini-date">May 15, 2026</div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="mini-bar" style="background:var(--green-mid)"></div>
+          <div>
+            <div class="mini-title">City permit system now in public beta testing</div>
+            <div class="mini-date">May 10, 2026</div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="mini-bar" style="background:#F59E0B"></div>
+          <div>
+            <div class="mini-title">Scheduled maintenance: Sunday June 1, 02:00–04:00 UTC</div>
+            <div class="mini-date">May 8, 2026</div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="mini-bar" style="background:var(--blue)"></div>
+          <div>
+            <div class="mini-title">Resource pack v3 released — new city block textures</div>
+            <div class="mini-date">Mar 22, 2026</div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="mini-bar" style="background:var(--purple)"></div>
+          <div>
+            <div class="mini-title">Anti-grief protection system rewritten from scratch</div>
+            <div class="mini-date">Feb 14, 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Events -->
+<section class="section" id="events">
+  <div class="wrap">
+    <div class="section-header fi">
+      <span class="section-title">Upcoming Events</span>
+    </div>
+    <div class="events fi">
+      <div class="ev">
+        <div class="ev-date"><div class="ev-day">01</div><div class="ev-mon">Jun</div></div>
+        <div class="ev-rule"></div>
+        <div class="ev-info">
+          <div class="ev-title">Scheduled Server Maintenance</div>
+          <div class="ev-desc">02:00 – 04:00 UTC · Performance tuning and plugin updates</div>
+        </div>
+        <span class="ev-tag ev-maint">Maintenance</span>
+      </div>
+      <div class="ev">
+        <div class="ev-date"><div class="ev-day">15</div><div class="ev-mon">Jun</div></div>
+        <div class="ev-rule"></div>
+        <div class="ev-info">
+          <div class="ev-title">City Building Competition — Season 4</div>
+          <div class="ev-desc">Open registration now · Best city district wins exclusive cosmetics</div>
+        </div>
+        <span class="ev-tag ev-event">Event</span>
+      </div>
+      <div class="ev">
+        <div class="ev-date"><div class="ev-day">01</div><div class="ev-mon">Jul</div></div>
+        <div class="ev-rule"></div>
+        <div class="ev-info">
+          <div class="ev-title">City Permit System — Full Release</div>
+          <div class="ev-desc">Beta closes, all players gain access to the permit workflow</div>
+        </div>
+        <span class="ev-tag ev-release">Release</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Changelog -->
+<section class="section" id="changelog">
+  <div class="wrap">
+    <div class="section-header fi">
+      <span class="section-title">Changelog</span>
+    </div>
+    <div class="clog fi">
+      <div class="cl">
+        <div class="cl-ver"><div class="cl-v">v4.2</div><div class="cl-d">May 2026</div></div>
+        <div class="cl-body">
+          <div class="cl-h">Hardware migration &amp; performance</div>
+          <ul class="cl-list">
+            <li>Migrated to new dedicated hardware (NVMe + 2× RAM)</li>
+            <li>Reduced average TPS drops by ~60% during peak hours</li>
+            <li>Optimised async chunk loading pipeline</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cl">
+        <div class="cl-ver"><div class="cl-v">v4.1</div><div class="cl-d">Apr 2026</div></div>
+        <div class="cl-body">
+          <div class="cl-h">Economy &amp; permit beta</div>
+          <ul class="cl-list">
+            <li>Adjusted 40+ shop item prices for long-term balance</li>
+            <li>Launched city permit system in closed beta</li>
+            <li>Added income rate caps to prevent inflation exploits</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cl">
+        <div class="cl-ver"><div class="cl-v">v4.0</div><div class="cl-d">Mar 2026</div></div>
+        <div class="cl-body">
+          <div class="cl-h">Resource pack v3 &amp; spawn redesign</div>
+          <ul class="cl-list">
+            <li>Released resource pack v3 with 200+ new city block textures</li>
+            <li>Completely redesigned spawn hub with new districts</li>
+            <li>Rewrote anti-grief region protection system</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">LAINTANIA.NET</div>
+    <div class="footer-links">
+      <a href="#">Rules</a>
+      <a href="#">Commands</a>
+      <a href="#">Shop</a>
+      <a href="#">Privacy</a>
+      <a href="#">Discord</a>
+    </div>
+    <div class="footer-right">© 2026 LAINTANIA.NET · Java CityBuild</div>
+  </div>
+</footer>
+
+<!-- Admin Modal -->
+<div class="overlay" id="adminModal" onclick="handleClick(event)">
+  <div class="modal">
+    <button class="mclose" onclick="closeModal()">✕</button>
+    <div class="modal-h">Admin Access</div>
+    <div class="modal-sub">Sign in to manage roadmap items, updates, and settings.</div>
+    <div class="field">
+      <label>Username or Email</label>
+      <input type="text" placeholder="admin@laintania.net" id="adminUser">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" placeholder="••••••••" id="adminPass">
+    </div>
+    <button class="btn btn-black" style="width:100%;justify-content:center;margin-top:6px" onclick="handleLogin()">Sign in</button>
+    <div class="modal-note">Demo: use password <code style="color:var(--green-mid);background:var(--green-bg);padding:1px 5px;border-radius:4px">admin</code></div>
+  </div>
+</div>
 
 <script>
-const canvas = document.getElementById('c');
-const ctx    = canvas.getContext('2d');
-const cap    = document.getElementById('caption');
-
-let W, H, CX, CY;
-function resize(){
-  W=canvas.width=window.innerWidth;
-  H=canvas.height=window.innerHeight;
-  CX=W/2; CY=H/2;
-}
-resize();
-window.addEventListener('resize',resize);
-
-// ── Easing ───────────────────────────────────────────────────────
-const ease={
-  out:  t=>1-(1-t)**3,
-  in:   t=>t*t*t,
-  inOut:t=>t<0.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1,
-  back: t=>{const c=1.7;return 1+c*(t-1)**3+(c+1)*(t-1)**2;},
-  elastic:t=>t===0?0:t===1?1:(-(2**(10*(t-1))))*Math.sin(((t-1)*10-0.75)*(2*Math.PI)/3)+1,
+const chartData={
+  '7d':{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],values:[18,22,19,25,31,38,29],avg:26},
+  '30d':{labels:['W1','W2','W3','W4'],values:[21,26,19,28],avg:24},
+  '1y':{labels:['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'],values:[14,18,22,19,24,21,17,23,26,28,31,24],avg:22}
 };
 
-// ── Utility ──────────────────────────────────────────────────────
-const lerp=(a,b,t)=>a+(b-a)*t;
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const rand=(a,b)=>Math.random()*(b-a)+a;
-const tau=Math.PI*2;
-
-function hsl(h,s,l,a=1){return `hsla(${h},${s}%,${l}%,${a})`;}
-
-// ── State ────────────────────────────────────────────────────────
-let t0=0;        // story start time
-let phase='idle';
-let particles=[];
-let entities=[];
-let caption='';
-let bgLayer=null; // background renderer
-
-// ── Stars ────────────────────────────────────────────────────────
-const stars=[];
-for(let i=0;i<160;i++) stars.push({x:rand(0,1),y:rand(0,1),r:rand(0.4,2),op:rand(0.1,0.6),sp:rand(1.5,4)});
-let starTwinkle=0;
-
-function drawStars(alpha=1){
-  starTwinkle+=0.016;
-  for(const s of stars){
-    const a=s.op*(0.6+0.4*Math.sin(starTwinkle/s.sp+s.x*10))*alpha;
-    ctx.beginPath();
-    ctx.arc(s.x*W,s.y*H,s.r,0,tau);
-    ctx.fillStyle=`rgba(255,255,255,${a})`;
-    ctx.fill();
-  }
+function buildChart(range){
+  const d=chartData[range];
+  const svg=document.getElementById('chartSvg');
+  const W=800,H=190,padX=12,padY=18;
+  const n=d.values.length;
+  const min=Math.min(...d.values)*.82;
+  const max=Math.max(...d.values)*1.08;
+  const xStep=(W-padX*2)/(n-1);
+  const pts=d.values.map((v,i)=>({
+    x:padX+i*xStep,
+    y:H-padY-((v-min)/(max-min))*(H-padY*2)
+  }));
+  const line=pts.map((p,i)=>(i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`)).join(' ');
+  const area=line+` L${pts[pts.length-1].x},${H} L${pts[0].x},${H} Z`;
+  const gid='g'+range;
+  svg.innerHTML=`
+    <defs>
+      <linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1A7A4A" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#1A7A4A" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${area}" fill="url(#${gid})"/>
+    <path d="${line}" fill="none" stroke="#2EA86A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p,i)=>`
+      <circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#2EA86A"/>
+      <text x="${p.x}" y="${H-2}" text-anchor="middle" font-size="11" fill="#C3C0BB" font-family="Figtree,sans-serif">${d.labels[i]}</text>
+    `).join('')}
+  `;
+  document.getElementById('chartAvg').textContent=d.avg;
 }
 
-// ── Particles ────────────────────────────────────────────────────
-class Particle{
-  constructor(x,y,opts={}){
-    this.x=x; this.y=y;
-    this.vx=opts.vx??rand(-2,2);
-    this.vy=opts.vy??rand(-4,-0.5);
-    this.r=opts.r??rand(2,5);
-    this.color=opts.color??'#fff';
-    this.life=1;
-    this.decay=opts.decay??rand(0.012,0.025);
-    this.gravity=opts.gravity??0.06;
-    this.glow=opts.glow??true;
-    this.shape=opts.shape??'circle';
-  }
-  update(){
-    this.x+=this.vx; this.y+=this.vy;
-    this.vy+=this.gravity;
-    this.life-=this.decay;
-  }
-  draw(){
-    if(this.life<=0)return;
-    ctx.save();
-    ctx.globalAlpha=this.life;
-    if(this.glow){
-      ctx.shadowBlur=this.r*4; ctx.shadowColor=this.color;
-    }
-    ctx.fillStyle=this.color;
-    if(this.shape==='circle'){
-      ctx.beginPath();
-      ctx.arc(this.x,this.y,this.r,0,tau);
-      ctx.fill();
-    } else if(this.shape==='confetti'){
-      ctx.translate(this.x,this.y);
-      ctx.rotate(this.life*10+this.vx);
-      ctx.fillRect(-this.r,-this.r/2,this.r*2,this.r);
-    }
-    ctx.restore();
-  }
+function setRange(r,btn){
+  document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  buildChart(r);
 }
 
-function burst(x,y,n,colors,opts={}){
-  for(let i=0;i<n;i++){
-    const ang=rand(0,tau);
-    const spd=rand(opts.minSpd??1,opts.maxSpd??5);
-    particles.push(new Particle(x,y,{
-      vx:Math.cos(ang)*spd,
-      vy:Math.sin(ang)*spd-(opts.upward??0),
-      r:opts.r??rand(2,5),
-      color:colors[Math.floor(rand(0,colors.length))],
-      decay:opts.decay??rand(0.01,0.022),
-      gravity:opts.gravity??0.05,
-      glow:opts.glow??true,
-      shape:opts.shape??'circle',
-    }));
-  }
+function fetchPlayers(){
+  const n=Math.floor(Math.random()*18)+8;
+  document.getElementById('playerCount').textContent=n;
+  document.getElementById('playerMeta').textContent='via NameMC · just now';
+  document.getElementById('peakVal').textContent=n+Math.floor(Math.random()*8)+4;
 }
 
-// ── Caption helper ───────────────────────────────────────────────
-function showCap(text,dur=3000){
-  const el=document.getElementById('caption');
-  el.textContent=text;
-  el.classList.add('show');
-  if(dur>0) setTimeout(()=>el.classList.remove('show'),dur);
-}
-
-// ── Timeline helper ──────────────────────────────────────────────
-function at(ms,fn){ setTimeout(fn,ms); }
-
-// ── Story Entities ───────────────────────────────────────────────
-
-// --- GROUND/BACKGROUND STATE ---
-let ground={
-  // 0=night, 1=sunrise, 2=day
-  sunRise:0,
-  // 0=forest-only, 1=split
-  split:0,
-  snowAlpha:0,
-  splitPos:0.5, // x fraction of split
-};
-
-function drawBackground(){
-  const sr=ground.sunRise;
-  // Sky gradient
-  const skyTop= sr<0.5
-    ? lerpColor('#04020a','#1a0530',sr*2)
-    : lerpColor('#1a0530','#ff9932',sr*2-1);
-  const skyBot= sr<0.5
-    ? lerpColor('#06030e','#4a1a6a',sr*2)
-    : lerpColor('#4a1a6a','#ffcc44',sr*2-1);
-
-  const skGrad=ctx.createLinearGradient(0,0,0,H*0.65);
-  skGrad.addColorStop(0,skyTop);
-  skGrad.addColorStop(1,skyBot);
-  ctx.fillStyle=skGrad;
-  ctx.fillRect(0,0,W,H*0.65);
-
-  // Sun
-  if(sr>0.1){
-    const sunY=lerp(H*0.7,H*0.22,(sr-0.1)/0.9);
-    const sunA=clamp((sr-0.1)/0.2,0,1);
-    ctx.save();
-    ctx.globalAlpha=sunA;
-    // rays
-    ctx.shadowBlur=60; ctx.shadowColor='#ffdd44';
-    for(let i=0;i<12;i++){
-      const a=(tau/12)*i;
-      ctx.strokeStyle=`rgba(255,220,80,${0.18*sunA})`;
-      ctx.lineWidth=3;
-      ctx.beginPath();
-      ctx.moveTo(CX+Math.cos(a)*45,sunY+Math.sin(a)*45);
-      ctx.lineTo(CX+Math.cos(a)*80,sunY+Math.sin(a)*80);
-      ctx.stroke();
-    }
-    ctx.shadowBlur=80; ctx.shadowColor='#ffcc00';
-    ctx.beginPath();
-    ctx.arc(CX,sunY,38,0,tau);
-    const sunGrad=ctx.createRadialGradient(CX-8,sunY-8,4,CX,sunY,38);
-    sunGrad.addColorStop(0,'#fff9aa');
-    sunGrad.addColorStop(0.5,'#ffe033');
-    sunGrad.addColorStop(1,'#ff9900');
-    ctx.fillStyle=sunGrad;
-    ctx.fill();
-    ctx.restore();
-  }
-
-  // Ground — split forest / snow
-  const sp=clamp(ground.split,0,1);
-  const splitX=W*ground.splitPos;
-
-  // Forest side (left or full)
-  const fGrad=ctx.createLinearGradient(0,H*0.6,0,H);
-  fGrad.addColorStop(0,'#1a3a0a');
-  fGrad.addColorStop(1,'#0d1f06');
-  ctx.fillStyle=fGrad;
-  ctx.fillRect(0,H*0.6,sp<0.01?W:splitX+sp*60,H);
-
-  if(sp>0.01){
-    // Snow side (right)
-    const snGrad=ctx.createLinearGradient(0,H*0.6,0,H);
-    snGrad.addColorStop(0,'#ddeeff');
-    snGrad.addColorStop(1,'#aaccee');
-    ctx.fillStyle=snGrad;
-    ctx.fillRect(splitX-sp*60,H*0.6,W-(splitX-sp*60),H);
-    // snow overlay sparkles
-    if(Math.random()<0.06){
-      particles.push(new Particle(rand(splitX,W),rand(H*0.6,H),{
-        vx:rand(-0.3,0.3),vy:rand(-0.2,0.2),
-        r:rand(1,2.5),color:'#ffffff',
-        decay:0.008,gravity:0,glow:true,
-      }));
-    }
-    // dividing tree line
-    ctx.strokeStyle=`rgba(60,30,10,${sp*0.6})`;
-    ctx.lineWidth=sp*6;
-    ctx.beginPath();
-    ctx.moveTo(splitX,H*0.58);
-    ctx.lineTo(splitX,H);
-    ctx.stroke();
-  }
-
-  // Trees (forest side)
-  drawTrees(sp<0.01?W:splitX+sp*40);
-
-  // Snow trees (snow side) if split
-  if(sp>0.01) drawSnowTrees(splitX-sp*40);
-
-  // Grass
-  drawGrass(sp<0.01?W:splitX+sp*40);
-
-  // Stars fade as sun rises
-  drawStars(clamp(1-sr*1.5,0,1));
-}
-
-function drawTrees(maxX){
-  const trees=[
-    {x:0.08,h:0.32,w:0.06},{x:0.14,h:0.28,w:0.05},
-    {x:0.22,h:0.35,w:0.065},{x:0.05,h:0.25,w:0.045},
-    {x:0.30,h:0.3,w:0.055},{x:0.38,h:0.26,w:0.05},
-  ];
-  for(const tr of trees){
-    const tx=tr.x*W; if(tx>maxX)continue;
-    const th=tr.h*H; const tw=tr.w*W;
-    const ty=H*0.62-th;
-    // trunk
-    ctx.fillStyle='#2a1200';
-    ctx.fillRect(tx-tw*0.08,ty+th*0.7,tw*0.16,th*0.3);
-    // foliage layers
-    for(let l=0;l<3;l++){
-      const ly=ty+th*0.6*l/3;
-      const lw=tw*(1.1-l*0.25);
-      ctx.beginPath();
-      ctx.moveTo(tx,ly); ctx.lineTo(tx-lw/2,ly+th*0.35); ctx.lineTo(tx+lw/2,ly+th*0.35);
-      ctx.closePath();
-      const gr=clamp(0.18+ground.sunRise*0.12,0,0.35);
-      ctx.fillStyle=`hsl(120,${40+l*8}%,${12+l*4}%)`;
-      ctx.fill();
-    }
+function openModal(){document.getElementById('adminModal').classList.add('open')}
+function closeModal(){document.getElementById('adminModal').classList.remove('open')}
+function handleClick(e){if(e.target===document.getElementById('adminModal'))closeModal()}
+function handleLogin(){
+  const pw=document.getElementById('adminPass').value;
+  if(pw==='admin'){
+    closeModal();
+    document.getElementById('adminBar').classList.add('on');
+  }else{
+    const inp=document.getElementById('adminPass');
+    inp.style.borderColor='var(--red)';
+    setTimeout(()=>{inp.style.borderColor=''},1200);
   }
 }
-
-function drawSnowTrees(minX){
-  const trees=[
-    {x:0.65,h:0.28,w:0.05},{x:0.72,h:0.32,w:0.055},
-    {x:0.80,h:0.26,w:0.048},{x:0.88,h:0.30,w:0.052},
-    {x:0.94,h:0.27,w:0.048},
-  ];
-  for(const tr of trees){
-    const tx=tr.x*W; if(tx<minX)continue;
-    const th=tr.h*H; const tw=tr.w*W;
-    const ty=H*0.62-th;
-    ctx.fillStyle='#554433';
-    ctx.fillRect(tx-tw*0.08,ty+th*0.7,tw*0.16,th*0.3);
-    for(let l=0;l<3;l++){
-      const ly=ty+th*0.6*l/3;
-      const lw=tw*(1.1-l*0.25);
-      ctx.beginPath();
-      ctx.moveTo(tx,ly); ctx.lineTo(tx-lw/2,ly+th*0.35); ctx.lineTo(tx+lw/2,ly+th*0.35);
-      ctx.closePath();
-      ctx.fillStyle=l===0?'#667788':'#778899';
-      ctx.fill();
-      // snow cap
-      ctx.beginPath();
-      ctx.moveTo(tx,ly); ctx.lineTo(tx-lw*0.4,ly+th*0.12); ctx.lineTo(tx+lw*0.4,ly+th*0.12);
-      ctx.closePath();
-      ctx.fillStyle='rgba(220,235,255,0.85)';
-      ctx.fill();
-    }
-  }
-}
-
-function drawGrass(maxX){
-  const blades=120;
-  for(let i=0;i<blades;i++){
-    const bx=rand(0,maxX);
-    const by=H*0.62+rand(-6,4);
-    const bh=rand(18,38);
-    const bl=rand(-8,8);
-    ctx.strokeStyle=`hsl(${110+rand(-10,10)},${55+rand(-10,10)}%,${18+rand(-4,8)+ground.sunRise*12}%)`;
-    ctx.lineWidth=1.5;
-    ctx.shadowBlur=6;
-    ctx.shadowColor='rgba(100,200,60,0.25)';
-    ctx.beginPath();
-    ctx.moveTo(bx,by);
-    ctx.quadraticCurveTo(bx+bl,by-bh*0.6,bx+bl*1.8,by-bh);
-    ctx.stroke();
-    ctx.shadowBlur=0;
-  }
-}
-
-// ── Color lerp ───────────────────────────────────────────────────
-function hexToRgb(h){
-  const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
-  return [r,g,b];
-}
-function lerpColor(a,b,t){
-  const [ar,ag,ab]=hexToRgb(a),  [br,bg,bb]=hexToRgb(b);
-  return `rgb(${Math.round(lerp(ar,br,t))},${Math.round(lerp(ag,bg,t))},${Math.round(lerp(ab,bb,t))})`;
-}
-
-// ── DAISY ────────────────────────────────────────────────────────
-const daisy={
-  alive:false,
-  x:0,y:0,
-  stemH:0, maxStemH:0,
-  petalScale:0,
-  rot:0,
-  alpha:1,
-  glowPulse:0,
-};
-
-function drawDaisy(){
-  if(!daisy.alive)return;
-  const {x,y,stemH,maxStemH,petalScale,rot,alpha}=daisy;
-  ctx.save(); ctx.globalAlpha=alpha;
-
-  // Stem glow
-  ctx.shadowBlur=14; ctx.shadowColor='rgba(100,220,60,0.7)';
-  ctx.strokeStyle='#6ecf3a'; ctx.lineWidth=5; ctx.lineCap='round';
-  ctx.beginPath();
-  ctx.moveTo(x,y);
-  ctx.quadraticCurveTo(x+12,y-stemH*0.5,x,y-stemH);
-  ctx.stroke();
-
-  // Small leaf
-  if(stemH>maxStemH*0.4){
-    ctx.save();
-    ctx.translate(x+6,y-stemH*0.5);
-    ctx.rotate(-0.5);
-    ctx.shadowBlur=10; ctx.shadowColor='rgba(80,200,40,0.6)';
-    ctx.fillStyle='#5abf2a';
-    ctx.beginPath();
-    ctx.ellipse(0,-10,7,16,0,0,tau);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  ctx.translate(x,y-stemH);
-  ctx.rotate(rot);
-
-  // Petals
-  for(let i=0;i<12;i++){
-    ctx.save();
-    ctx.rotate((tau/12)*i);
-    ctx.scale(petalScale,petalScale);
-    ctx.shadowBlur=18; ctx.shadowColor='rgba(255,255,180,0.6)';
-    const pg=ctx.createRadialGradient(0,-52,2,0,-52,20);
-    pg.addColorStop(0,'#fffff0'); pg.addColorStop(1,'#f0e060');
-    ctx.fillStyle=pg;
-    ctx.beginPath();
-    ctx.ellipse(0,-52,9,20,0,0,tau);
-    ctx.fill();
-    ctx.restore();
-  }
-  // Inner petals
-  for(let i=0;i<12;i++){
-    ctx.save();
-    ctx.rotate((tau/12)*i+tau/24);
-    ctx.scale(petalScale*0.8,petalScale*0.8);
-    ctx.fillStyle='rgba(255,255,220,0.55)';
-    ctx.beginPath();
-    ctx.ellipse(0,-36,6,13,0,0,tau);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  // Center
-  daisy.glowPulse+=0.05;
-  const gp=0.8+0.2*Math.sin(daisy.glowPulse);
-  ctx.shadowBlur=22*gp; ctx.shadowColor='rgba(255,200,0,0.8)';
-  const cg=ctx.createRadialGradient(-4,-4,2,0,0,24);
-  cg.addColorStop(0,'#fff566'); cg.addColorStop(0.5,'#f5c000'); cg.addColorStop(1,'#c87800');
-  ctx.beginPath(); ctx.arc(0,0,24,0,tau);
-  ctx.fillStyle=cg; ctx.fill();
-  // Center dots
-  for(let i=0;i<8;i++){
-    const a=(tau/8)*i;
-    ctx.beginPath();
-    ctx.arc(Math.cos(a)*12,Math.sin(a)*12,3,0,tau);
-    ctx.fillStyle='rgba(100,50,0,0.5)'; ctx.fill();
-  }
-
-  // Floating glow dots
-  for(let i=0;i<6;i++){
-    const a=(tau/6)*i+daisy.glowPulse*0.7;
-    const r=30+8*Math.sin(daisy.glowPulse+i);
-    ctx.beginPath();
-    ctx.arc(Math.cos(a)*r,Math.sin(a)*r,2,0,tau);
-    ctx.shadowBlur=8; ctx.shadowColor='#ffe066';
-    ctx.fillStyle='rgba(255,230,80,0.7)';
-    ctx.fill();
-  }
-
-  ctx.restore();
-}
-
-// ── BIRD ─────────────────────────────────────────────────────────
-const bird={
-  alive:false,
-  x:0,y:0,
-  scale:0,
-  alpha:1,
-  wingT:0,
-  hue1:180, hue2:280, // color shift over time
-  colorT:0,
-  bob:0,
-};
-
-function drawBird(){
-  if(!bird.alive)return;
-  bird.wingT+=0.06;
-  bird.bob+=0.03;
-  bird.colorT=Math.min(bird.colorT+0.004,1);
-
-  const hue=lerp(bird.hue1,bird.hue2,0.5+0.5*Math.sin(bird.colorT*Math.PI));
-  const col=`hsl(${hue},80%,65%)`;
-  const col2=`hsl(${hue+40},90%,75%)`;
-
-  const bx=bird.x, by=bird.y+Math.sin(bird.bob)*8;
-
-  ctx.save();
-  ctx.translate(bx,by);
-  ctx.scale(bird.scale,bird.scale);
-  ctx.globalAlpha=bird.alpha;
-
-  // Glow aura
-  const aura=ctx.createRadialGradient(0,0,10,0,0,80);
-  aura.addColorStop(0,`hsla(${hue},90%,70%,0.18)`);
-  aura.addColorStop(1,'transparent');
-  ctx.beginPath(); ctx.arc(0,0,80,0,tau);
-  ctx.fillStyle=aura; ctx.fill();
-
-  // Wing flap
-  const wA=Math.sin(bird.wingT)*0.5;
-  // Left wing
-  ctx.save(); ctx.rotate(-wA);
-  ctx.shadowBlur=20; ctx.shadowColor=col;
-  ctx.fillStyle=col;
-  ctx.beginPath();
-  ctx.ellipse(-52,-8,44,16,0,0,tau);
-  ctx.fill();
-  // feather lines
-  for(let f=0;f<3;f++){
-    ctx.strokeStyle=`rgba(255,255,255,0.25)`;
-    ctx.lineWidth=1.2; ctx.lineCap='round';
-    ctx.beginPath();
-    ctx.moveTo(-20+f*2,-10+f*8); ctx.lineTo(-82+f*4,-10+f*5);
-    ctx.stroke();
-  }
-  ctx.restore();
-  // Right wing
-  ctx.save(); ctx.rotate(wA);
-  ctx.fillStyle=col;
-  ctx.shadowBlur=20; ctx.shadowColor=col;
-  ctx.beginPath();
-  ctx.ellipse(52,-8,44,16,0,0,tau);
-  ctx.fill();
-  for(let f=0;f<3;f++){
-    ctx.strokeStyle='rgba(255,255,255,0.25)';
-    ctx.lineWidth=1.2;
-    ctx.beginPath();
-    ctx.moveTo(20-f*2,-10+f*8); ctx.lineTo(82-f*4,-10+f*5);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  // Tail
-  ctx.shadowBlur=14; ctx.shadowColor=col2;
-  ctx.fillStyle=col2;
-  for(let t=-1;t<=1;t++){
-    ctx.save(); ctx.rotate(t*0.22);
-    ctx.beginPath(); ctx.ellipse(t*10,40,8,22,0,0,tau);
-    ctx.fill(); ctx.restore();
-  }
-
-  // Body
-  const bodyGrad=ctx.createRadialGradient(-6,-4,4,0,4,34);
-  bodyGrad.addColorStop(0,'#e8f4ff'); bodyGrad.addColorStop(0.5,col); bodyGrad.addColorStop(1,`hsl(${hue},70%,40%)`);
-  ctx.shadowBlur=22; ctx.shadowColor=col;
-  ctx.fillStyle=bodyGrad;
-  ctx.beginPath(); ctx.ellipse(0,4,26,34,0,0,tau); ctx.fill();
-
-  // Head
-  ctx.beginPath(); ctx.arc(0,-34,20,0,tau);
-  ctx.fillStyle=bodyGrad; ctx.fill();
-  // Head highlight
-  ctx.beginPath(); ctx.ellipse(-5,-40,8,6,-.4,0,tau);
-  ctx.fillStyle='rgba(255,255,255,0.18)'; ctx.fill();
-
-  // Crest
-  for(let c=-1;c<=1;c++){
-    ctx.save(); ctx.rotate(c*0.3);
-    ctx.shadowBlur=10; ctx.shadowColor=col2;
-    ctx.fillStyle=col2;
-    ctx.beginPath(); ctx.ellipse(c*5,-53,4,12,0,0,tau); ctx.fill();
-    ctx.restore();
-  }
-
-  // Beak
-  ctx.fillStyle='#f5c842';
-  ctx.shadowBlur=8; ctx.shadowColor='#ffe066';
-  ctx.beginPath(); ctx.moveTo(12,-34); ctx.lineTo(22,-31); ctx.lineTo(12,-28); ctx.closePath(); ctx.fill();
-
-  // Eye
-  ctx.beginPath(); ctx.arc(-4,-36,6,0,tau); ctx.fillStyle='#0a1a2e'; ctx.fill();
-  ctx.beginPath(); ctx.arc(-4,-36,4,0,tau); ctx.fillStyle='#1a3a5c'; ctx.fill();
-  ctx.beginPath(); ctx.arc(-2,-38,2,0,tau); ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fill();
-
-  // Feet
-  ctx.strokeStyle='#f5c842'; ctx.lineWidth=2.2; ctx.lineCap='round';
-  [[-8,40],[ 8,40]].forEach(([fx,fy])=>{
-    ctx.beginPath(); ctx.moveTo(fx,fy); ctx.lineTo(fx,fy+16); ctx.stroke();
-    for(let t=-1;t<=1;t++){
-      ctx.beginPath(); ctx.moveTo(fx,fy+16); ctx.lineTo(fx+t*10,fy+24); ctx.stroke();
-    }
-  });
-
-  // Orbiting glow dots
-  for(let i=0;i<5;i++){
-    const a=(tau/5)*i+bird.wingT*0.4;
-    const r=50+12*Math.sin(bird.wingT+i*1.3);
-    ctx.beginPath(); ctx.arc(Math.cos(a)*r,Math.sin(a)*r,2.5,0,tau);
-    ctx.shadowBlur=10; ctx.shadowColor=col2;
-    ctx.fillStyle=col2; ctx.fill();
-  }
-
-  ctx.restore();
-}
-
-// ── BUTTERFLY ────────────────────────────────────────────────────
-class Butterfly{
-  constructor(x,y,opts={}){
-    this.x=x; this.y=y;
-    this.vx=opts.vx??rand(-1,1);
-    this.vy=opts.vy??-1.5;
-    this.scale=opts.scale??0;
-    this.targetScale=opts.targetScale??1;
-    this.alpha=0;
-    this.targetAlpha=1;
-    this.flapT=rand(0,tau);
-    this.hue=opts.hue??rand(0,360);
-    this.alive=true;
-    this.age=0;
-    this.bob=rand(0,tau);
-    this.wanderAng=rand(0,tau);
-    this.sparkle=opts.sparkle??false;
-    this.sparkleAmt=opts.sparkleAmt??0;
-    this.target=null; // {x,y} for cone-seeking
-    this.state=opts.state??'fly'; // fly | seeking | inside | emerging | wandering
-    this.stateT=0;
-    this.id=Math.random();
-  }
-  update(){
-    this.age+=0.016;
-    this.flapT+=0.12;
-    this.bob+=0.04;
-    this.scale+=(this.targetScale-this.scale)*0.08;
-    this.alpha+=(this.targetAlpha-this.alpha)*0.07;
-    this.stateT+=0.016;
-
-    if(this.state==='seeking' && this.target){
-      const dx=this.target.x-this.x, dy=this.target.y-this.y;
-      const dist=Math.sqrt(dx*dx+dy*dy);
-      if(dist<8){ this.state='inside'; this.stateT=0; this.alive=false; return; }
-      this.vx+=dx/dist*0.15; this.vy+=dy/dist*0.15;
-      this.vx*=0.92; this.vy*=0.92;
-    } else if(this.state==='wandering'){
-      this.wanderAng+=rand(-0.06,0.06);
-      this.vx+=Math.cos(this.wanderAng)*0.04;
-      this.vy+=Math.sin(this.wanderAng)*0.04-0.01;
-      this.vx*=0.98; this.vy*=0.98;
-      // gentle bob
-      this.vy+=Math.sin(this.bob)*0.015;
-    } else {
-      this.vx*=0.98; this.vy*=0.97;
-      this.vy+=Math.sin(this.bob)*0.012;
-    }
-
-    this.x+=this.vx; this.y+=this.vy;
-
-    // sparkle trail
-    if(this.sparkle && this.sparkleAmt>0 && Math.random()<this.sparkleAmt*0.3){
-      const sparkCols=['#ffffff','#ffe066',`hsl(${this.hue},100%,75%)`,`hsl(${this.hue+60},100%,80%)`];
-      particles.push(new Particle(this.x,this.y,{
-        vx:rand(-1,1),vy:rand(-1.5,0.5),
-        r:rand(1.5,4),color:sparkCols[Math.floor(rand(0,4))],
-        decay:rand(0.02,0.04),gravity:-0.02,glow:true,
-      }));
-    }
-  }
-  draw(){
-    if(!this.alive && this.state!=='wandering') return;
-    ctx.save();
-    ctx.translate(this.x,this.y);
-    ctx.scale(this.scale,this.scale);
-    ctx.globalAlpha=this.alpha;
-
-    const flap=Math.sin(this.flapT)*0.8;
-    const h=this.hue;
-
-    // Wing helper
-    const drawWing=(side,scaleX)=>{
-      ctx.save();
-      ctx.scale(scaleX*Math.cos(flap),1);
-
-      // 8-eye pattern: 2 circles per wing (upper/lower)
-      const wingColors=[
-        `hsl(${h},90%,60%)`, `hsl(${h+30},100%,70%)`,
-        `hsl(${h+60},80%,65%)`, `hsl(${h+90},90%,60%)`,
-      ];
-
-      // Upper wing
-      ctx.shadowBlur=16; ctx.shadowColor=wingColors[0];
-      ctx.fillStyle=wingColors[0];
-      ctx.beginPath();
-      ctx.ellipse(side*22,-14,20,28,side*0.3,0,tau);
-      ctx.fill();
-      // Upper wing eye
-      ctx.fillStyle=`hsl(${h+180},80%,30%)`;
-      ctx.beginPath(); ctx.arc(side*22,-14,8,0,tau); ctx.fill();
-      ctx.fillStyle=`hsl(${h+180},60%,80%)`;
-      ctx.beginPath(); ctx.arc(side*22-side*2,-16,4,0,tau); ctx.fill();
-      ctx.fillStyle='white';
-      ctx.beginPath(); ctx.arc(side*22-side*1,-17,1.8,0,tau); ctx.fill();
-
-      // Lower wing
-      ctx.shadowBlur=14; ctx.shadowColor=wingColors[2];
-      ctx.fillStyle=wingColors[2];
-      ctx.beginPath();
-      ctx.ellipse(side*18,18,16,22,side*0.5,0,tau);
-      ctx.fill();
-      // Lower wing eye
-      ctx.fillStyle=`hsl(${h+200},80%,28%)`;
-      ctx.beginPath(); ctx.arc(side*18,18,6,0,tau); ctx.fill();
-      ctx.fillStyle=`hsl(${h+200},60%,75%)`;
-      ctx.beginPath(); ctx.arc(side*18-side*1.5,16,3,0,tau); ctx.fill();
-      ctx.fillStyle='white';
-      ctx.beginPath(); ctx.arc(side*18-side*0.5,15,1.5,0,tau); ctx.fill();
-
-      // Wing shimmer
-      ctx.strokeStyle=`rgba(255,255,255,0.2)`;
-      ctx.lineWidth=0.8;
-      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(side*36,-24); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0,4); ctx.lineTo(side*32,24); ctx.stroke();
-
-      ctx.restore();
-    };
-
-    drawWing(1,1);   // right
-    drawWing(-1,-1); // left (mirror)
-
-    // Body
-    ctx.shadowBlur=12; ctx.shadowColor=`hsl(${h},80%,50%)`;
-    ctx.fillStyle=`hsl(${h+20},50%,25%)`;
-    ctx.beginPath(); ctx.ellipse(0,0,5,22,0,0,tau); ctx.fill();
-    // Head
-    ctx.fillStyle=`hsl(${h+20},60%,30%)`;
-    ctx.beginPath(); ctx.arc(0,-22,5,0,tau); ctx.fill();
-    // Antennae
-    ctx.strokeStyle=`hsl(${h},70%,55%)`; ctx.lineWidth=1.2;
-    ctx.beginPath(); ctx.moveTo(-2,-24); ctx.quadraticCurveTo(-12,-40,-8,-48); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(2,-24); ctx.quadraticCurveTo(12,-40,8,-48); ctx.stroke();
-    ctx.fillStyle=`hsl(${h},90%,70%)`;
-    ctx.beginPath(); ctx.arc(-8,-48,3,0,tau); ctx.fill();
-    ctx.beginPath(); ctx.arc(8,-48,3,0,tau); ctx.fill();
-
-    ctx.restore();
-  }
-}
-
-// ── CONE ─────────────────────────────────────────────────────────
-const cone={
-  alive:false,
-  x:0, y:0,
-  scale:0,
-  glow:0,
-  alpha:0,
-};
-
-function drawCone(){
-  if(!cone.alive)return;
-  cone.glow+=0.04;
-  ctx.save();
-  ctx.globalAlpha=cone.alpha;
-  ctx.translate(cone.x,cone.y);
-  ctx.scale(cone.scale,cone.scale);
-
-  const gp=0.7+0.3*Math.sin(cone.glow);
-  ctx.shadowBlur=30*gp; ctx.shadowColor='rgba(255,80,80,0.7)';
-
-  // Cone body
-  const cg=ctx.createLinearGradient(-25,0,25,0);
-  cg.addColorStop(0,'#cc1111'); cg.addColorStop(0.5,'#ff4444'); cg.addColorStop(1,'#aa0000');
-  ctx.fillStyle=cg;
-  ctx.beginPath();
-  ctx.moveTo(0,-55); ctx.lineTo(-28,30); ctx.lineTo(28,30); ctx.closePath(); ctx.fill();
-
-  // White stripes
-  ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=4;
-  for(let s=0;s<3;s++){
-    const sy=-30+s*22;
-    const hw=((sy+55)/85)*28;
-    ctx.beginPath(); ctx.moveTo(-hw,sy); ctx.lineTo(hw,sy); ctx.stroke();
-  }
-
-  // Base
-  ctx.shadowBlur=10; ctx.shadowColor='rgba(255,60,60,0.5)';
-  ctx.fillStyle='#881100';
-  ctx.beginPath(); ctx.ellipse(0,30,28,8,0,0,tau); ctx.fill();
-
-  // Glow pulses
-  for(let i=0;i<4;i++){
-    const a=(tau/4)*i+cone.glow;
-    ctx.beginPath(); ctx.arc(Math.cos(a)*38,Math.sin(a)*20+0,3,0,tau);
-    ctx.fillStyle='rgba(255,80,80,0.5)'; ctx.fill();
-  }
-
-  ctx.restore();
-}
-
-// ── BEARS ────────────────────────────────────────────────────────
-const bears={
-  alive:false,
-  alpha:0,
-  bounce:0,
-  confettiLanded:0,
-};
-
-function drawBears(){
-  if(!bears.alive)return;
-  bears.bounce+=0.04;
-  ctx.save();
-  ctx.globalAlpha=bears.alpha;
-
-  // Brown bear (left, forest side)
-  const lx=CX-120, ly=H*0.62;
-  drawBear(lx,ly,'brown',false);
-
-  // Polar bear (right, snow side)
-  const rx=CX+120, ry=H*0.62;
-  drawBear(rx,ry,'polar',true);
-
-  ctx.restore();
-}
-
-function drawBear(x,y,type,hat){
-  const bob=Math.sin(bears.bounce+(type==='polar'?0:Math.PI))*4;
-  ctx.save();
-  ctx.translate(x,y+bob);
-
-  const face= type==='brown'?'#7a4a1a':'#f0f0f0';
-  const body= type==='brown'?'#6a3a10':'#e8e8e8';
-  const dark= type==='brown'?'#3a1a00':'#a0a0a0';
-  const nose= type==='brown'?'#1a0800':'#2a2a2a';
-
-  // Shadow
-  ctx.fillStyle='rgba(0,0,0,0.2)';
-  ctx.beginPath(); ctx.ellipse(0,5,35,8,0,0,tau); ctx.fill();
-
-  // Body
-  ctx.shadowBlur=type==='polar'?18:12;
-  ctx.shadowColor=type==='polar'?'rgba(200,230,255,0.4)':'rgba(100,60,10,0.4)';
-  ctx.fillStyle=body;
-  ctx.beginPath(); ctx.ellipse(0,-22,28,34,0,0,tau); ctx.fill();
-
-  // Belly
-  ctx.fillStyle=type==='brown'?'#c08050':'#d8d8d8';
-  ctx.beginPath(); ctx.ellipse(0,-18,16,22,0,0,tau); ctx.fill();
-
-  // Arms
-  ctx.fillStyle=body;
-  ctx.beginPath(); ctx.ellipse(-30,-18,10,16,-.5,0,tau); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(30,-18,10,16,.5,0,tau); ctx.fill();
-
-  // Legs
-  ctx.fillStyle=body;
-  ctx.beginPath(); ctx.ellipse(-14,8,10,12,0,0,tau); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(14,8,10,12,0,0,tau); ctx.fill();
-  // Paws
-  ctx.fillStyle=dark;
-  ctx.beginPath(); ctx.ellipse(-14,18,10,7,0,0,tau); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(14,18,10,7,0,0,tau); ctx.fill();
-
-  // Head
-  ctx.fillStyle=face;
-  ctx.shadowBlur=10; ctx.shadowColor=type==='polar'?'rgba(180,220,255,0.35)':'rgba(80,40,0,0.35)';
-  ctx.beginPath(); ctx.arc(0,-54,26,0,tau); ctx.fill();
-  // Ears
-  ctx.fillStyle=face;
-  ctx.beginPath(); ctx.arc(-20,-76,12,0,tau); ctx.fill();
-  ctx.beginPath(); ctx.arc(20,-76,12,0,tau); ctx.fill();
-  ctx.fillStyle=dark;
-  ctx.beginPath(); ctx.arc(-20,-76,7,0,tau); ctx.fill();
-  ctx.beginPath(); ctx.arc(20,-76,7,0,tau); ctx.fill();
-
-  // Snout
-  ctx.fillStyle=type==='brown'?'#b07040':'#d8d8d8';
-  ctx.beginPath(); ctx.ellipse(0,-46,13,10,0,0,tau); ctx.fill();
-  // Nose
-  ctx.fillStyle=nose;
-  ctx.shadowBlur=4; ctx.shadowColor='rgba(0,0,0,0.5)';
-  ctx.beginPath(); ctx.ellipse(0,-49,6,4,0,0,tau); ctx.fill();
-  // Eyes
-  ctx.fillStyle='#111';
-  ctx.beginPath(); ctx.arc(-9,-58,4,0,tau); ctx.fill();
-  ctx.beginPath(); ctx.arc(9,-58,4,0,tau); ctx.fill();
-  ctx.fillStyle='white';
-  ctx.beginPath(); ctx.arc(-8,-59.5,1.5,0,tau); ctx.fill();
-  ctx.beginPath(); ctx.arc(10,-59.5,1.5,0,tau); ctx.fill();
-
-  // Smile
-  ctx.strokeStyle=type==='brown'?'#3a1a00':'#555';
-  ctx.lineWidth=2; ctx.lineCap='round';
-  ctx.beginPath();
-  ctx.arc(0,-46,7,0.3,Math.PI-0.3);
-  ctx.stroke();
-
-  // Birthday hat (polar bear)
-  if(hat){
-    ctx.save();
-    ctx.translate(0,-78);
-    // Hat cone
-    const hg=ctx.createLinearGradient(-14,0,14,0);
-    hg.addColorStop(0,'#dd1188'); hg.addColorStop(0.5,'#ff55bb'); hg.addColorStop(1,'#aa0066');
-    ctx.shadowBlur=14; ctx.shadowColor='rgba(255,80,200,0.6)';
-    ctx.fillStyle=hg;
-    ctx.beginPath(); ctx.moveTo(0,-38); ctx.lineTo(-16,0); ctx.lineTo(16,0); ctx.closePath(); ctx.fill();
-    // Stripes
-    ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=2.5;
-    for(let s=0;s<3;s++){
-      const sy=-28+s*12;
-      const hw=((sy+38)/38)*16;
-      ctx.beginPath(); ctx.moveTo(-hw,sy); ctx.lineTo(hw,sy); ctx.stroke();
-    }
-    // Brim
-    ctx.fillStyle='#ff55bb';
-    ctx.beginPath(); ctx.ellipse(0,0,18,6,0,0,tau); ctx.fill();
-    // Pompom
-    ctx.shadowBlur=10; ctx.shadowColor='#ffffff';
-    ctx.fillStyle='white';
-    ctx.beginPath(); ctx.arc(0,-38,5,0,tau); ctx.fill();
-    ctx.restore();
-  }
-
-  ctx.restore();
-}
-
-// ── CONFETTI ─────────────────────────────────────────────────────
-function launchConfetti(n=200){
-  const cols=[
-    '#f43f5e','#f97316','#eab308','#22c55e','#3b82f6',
-    '#8b5cf6','#ec4899','#06b6d4','#ffffff','#fbbf24',
-  ];
-  for(let i=0;i<n;i++){
-    setTimeout(()=>{
-      particles.push(new Particle(rand(W*0.1,W*0.9),rand(-20,H*0.3),{
-        vx:rand(-3,3),
-        vy:rand(-4,1),
-        r:rand(4,9),
-        color:cols[Math.floor(rand(0,cols.length))],
-        decay:rand(0.004,0.01),
-        gravity:0.12,
-        glow:false,
-        shape:'confetti',
-      }));
-    },i*12);
-  }
-}
-
-// ── BUTTERFLIES ARRAY ────────────────────────────────────────────
-let butterflies=[];
-let mainButterfly=null;
-
-// ── MAIN LOOP ─────────────────────────────────────────────────────
-let lastT=0;
-function loop(ts){
-  requestAnimationFrame(loop);
-  if(!t0 || phase==='idle') {
-    // Static pre-start: just stars + bg
-    ctx.clearRect(0,0,W,H);
-    drawBackground();
-    drawStars(1);
-    particles=particles.filter(p=>{p.update();p.draw();return p.life>0;});
-    return;
-  }
-
-  const dt=Math.min((ts-lastT)/16.67,3);
-  lastT=ts;
-
-  ctx.clearRect(0,0,W,H);
-  drawBackground();
-
-  // Entities draw order: daisy → cone → bird → butterflies → bears
-  drawDaisy();
-  drawCone();
-  drawBird();
-  butterflies.forEach(b=>{b.update();b.draw();});
-  butterflies=butterflies.filter(b=>b.alpha>0.01);
-  drawBears();
-
-  // Particles on top
-  particles=particles.filter(p=>{p.update();p.draw();return p.life>0;});
-}
-requestAnimationFrame(loop);
-
-// ── STORY TIMELINE ────────────────────────────────────────────────
-function startStory(){
-  document.getElementById('start-btn').classList.add('fade-out');
-  t0=performance.now();
-  phase='story';
-  lastT=performance.now();
-
-  const cx=CX, groundY=H*0.62;
-
-  // ─ CHAPTER 1: Daisy grows ─────────────────── t=0
-  showCap('Eine Geschichte beginnt …',3000);
-  daisy.alive=true;
-  daisy.x=cx; daisy.y=groundY;
-  daisy.maxStemH=H*0.22;
-  daisy.petalScale=0; daisy.stemH=0; daisy.alpha=1;
-
-  // Stem grows
-  at(500,()=>{
-    const grow=()=>{
-      daisy.stemH=Math.min(daisy.stemH+daisy.maxStemH*0.018,daisy.maxStemH);
-      burst(daisy.x+rand(-6,6),daisy.y-daisy.stemH,1,['#6ecf3a','#a0e060','#ccff80'],{r:2,decay:0.03,upward:1,maxSpd:2,minSpd:0.5,glow:true});
-      if(daisy.stemH<daisy.maxStemH) requestAnimationFrame(grow);
-      else bloomPetals();
-    };
-    requestAnimationFrame(grow);
-  });
-
-  function bloomPetals(){
-    const bloom=()=>{
-      daisy.petalScale=Math.min(daisy.petalScale+0.03,1);
-      if(daisy.petalScale<1) requestAnimationFrame(bloom);
-      else{
-        burst(daisy.x,daisy.y-daisy.stemH,24,['#fffde0','#ffe566','#fff8a0','#ffffff'],{r:3,decay:0.018,upward:2,maxSpd:4,glow:true});
-        showCap('Eine Gänseblume wächst …',3000);
-        at(2000,startBirdMorph);
-      }
-    };
-    requestAnimationFrame(bloom);
-  }
-
-  // ─ CHAPTER 2: Daisy → Bird ───────────────── t≈3.5s
-  function startBirdMorph(){
-    showCap('Und verwandelt sich …',2500);
-    // Daisy fades, petals burst
-    const fadeD=()=>{
-      daisy.alpha=Math.max(daisy.alpha-0.025,0);
-      daisy.petalScale*=1.04;
-      if(daisy.alpha>0) requestAnimationFrame(fadeD);
-      else daisy.alive=false;
-    };
-    requestAnimationFrame(fadeD);
-
-    // Massive burst
-    burst(cx,daisy.y-daisy.stemH,40,['#fffde0','#ffe566','#f0c000','#ffffff','#ffaaaa'],{r:4,decay:0.012,upward:3,maxSpd:6,glow:true});
-
-    // Bird appears
-    at(800,()=>{
-      bird.alive=true;
-      bird.x=cx; bird.y=H*0.38;
-      bird.scale=0; bird.alpha=1;
-      bird.colorT=0;
-      const growB=()=>{
-        bird.scale=Math.min(bird.scale+0.04,1);
-        if(bird.scale<1) requestAnimationFrame(growB);
-        else{
-          showCap('Ein Vogel in leuchtenden Farben',2500);
-          at(2200,spawnButterfly);
-        }
-      };
-      requestAnimationFrame(growB);
-    });
-  }
-
-  // ─ CHAPTER 3: Butterfly from bird's mouth ── t≈7s
-  function spawnButterfly(){
-    showCap('Aus seinem Schnabel …',2000);
-    at(800,()=>{
-      showCap('… entfaltet sich ein Schmetterling ✨',3000);
-      const bx=bird.x+22, by=bird.y-34;
-      mainButterfly=new Butterfly(bx,by,{
-        hue:280, sparkle:true, sparkleAmt:0.8,
-        vx:2, vy:-2, targetScale:1.0,
-        state:'fly',
-      });
-      butterflies.push(mainButterfly);
-
-      // Bird fades out gently
-      at(1500,()=>{
-        const fadeB=()=>{
-          bird.alpha=Math.max(bird.alpha-0.018,0);
-          if(bird.alpha>0) requestAnimationFrame(fadeB);
-          else bird.alive=false;
-        };
-        requestAnimationFrame(fadeB);
-      });
-
-      // Main butterfly drifts, then seeks cone
-      at(1200,()=>showCap('Er glitzert und funkelt …',2000));
-      at(2500,()=>{
-        // Spawn cone
-        cone.alive=true;
-        cone.x=cx+160; cone.y=H*0.5;
-        cone.alpha=0; cone.scale=0;
-        const coneIn=()=>{
-          cone.scale=Math.min(cone.scale+0.04,1);
-          cone.alpha=Math.min(cone.alpha+0.04,1);
-          if(cone.scale<1) requestAnimationFrame(coneIn);
-        };
-        requestAnimationFrame(coneIn);
-        showCap('Ein roter Kegel erscheint …',2000);
-
-        // Main butterfly seeks cone
-        at(1000,()=>{
-          if(mainButterfly){
-            mainButterfly.state='seeking';
-            mainButterfly.target={x:cone.x,y:cone.y};
-            mainButterfly.vx=0; mainButterfly.vy=0;
-          }
-          showCap('Der Schmetterling fliegt hinein …',2500);
-
-          // When butterfly reaches cone (approx timing)
-          at(2200,()=>{
-            showCap('… und kommt noch strahlender heraus!',3000);
-            // Cone flash
-            burst(cone.x,cone.y,30,['#ff4444','#ff8888','#ffcc44','#ffffff','#ffaaaa'],{r:5,decay:0.015,upward:2,maxSpd:5,glow:true});
-
-            // New sparkly butterfly emerges
-            const newB=new Butterfly(cone.x,cone.y,{
-              hue:280,sparkle:true,sparkleAmt:2,
-              vx:-2,vy:-2,targetScale:1.1,state:'wandering',
-            });
-            newB.wanderAng=Math.PI;
-            butterflies.push(newB);
-            mainButterfly=newB;
-
-            // Hide cone
-            at(500,()=>{
-              const fadeC=()=>{
-                cone.alpha=Math.max(cone.alpha-0.03,0);
-                if(cone.alpha>0) requestAnimationFrame(fadeC);
-                else cone.alive=false;
-              };
-              requestAnimationFrame(fadeC);
-            });
-
-            at(1500,()=>spawnMoreButterflies(newB));
-          });
-        });
-      });
-    });
-  }
-
-  // ─ CHAPTER 4: 5 more butterflies ──────────── t≈14s
-  function spawnMoreButterflies(leader){
-    showCap('Fünf weitere Schmetterlinge kommen …',3000);
-    const hues=[0,60,120,180,40];
-    for(let i=0;i<5;i++){
-      at(i*350,()=>{
-        const b=new Butterfly(cone.x+rand(-30,30),cone.y+rand(-20,20),{
-          hue:hues[i],sparkle:true,sparkleAmt:0.6,
-          vx:rand(-2.5,2.5),vy:rand(-3,-1),
-          targetScale:0.9+rand(0,0.3),state:'wandering',
-        });
-        b.wanderAng=rand(0,tau);
-        butterflies.push(b);
-      });
-    }
-
-    at(2500,()=>{
-      showCap('Zusammen tanzen sie durch die Nacht …',3000);
-      at(3200,startSunrise);
-    });
-  }
-
-  // ─ CHAPTER 5: Sunrise ────────────────────── t≈20s
-  function startSunrise(){
-    showCap('Die Sonne geht auf …',3000);
-    const riseSpd=0.003;
-    const riseLoop=()=>{
-      ground.sunRise=Math.min(ground.sunRise+riseSpd,1);
-      if(ground.sunRise<1) requestAnimationFrame(riseLoop);
-      else at(1000,startSplit);
-    };
-    requestAnimationFrame(riseLoop);
-  }
-
-  // ─ CHAPTER 6: World splits ─────────────────
-  function startSplit(){
-    showCap('Die Welt teilt sich …',2500);
-    const splitLoop=()=>{
-      ground.split=Math.min(ground.split+0.012,1);
-      if(ground.split<1) requestAnimationFrame(splitLoop);
-      else at(1200,launchBearBirthdayConfetti);
-    };
-    requestAnimationFrame(splitLoop);
-  }
-
-  // ─ CHAPTER 7: Confetti → Bears ─────────────
-  function launchBearBirthdayConfetti(){
-    showCap('Die Schmetterlinge werden zu Konfetti …',3000);
-    // Butterflies turn into confetti bursts
-    butterflies.forEach(b=>{
-      burst(b.x,b.y,15,[
-        `hsl(${b.hue},90%,65%)`,`hsl(${b.hue+60},90%,70%)`,'#ffffff',
-      ],{r:5,decay:0.008,gravity:0.1,shape:'confetti',glow:false,maxSpd:4,upward:2});
-      b.targetAlpha=0;
-      b.targetScale=0;
-    });
-
-    launchConfetti(250);
-
-    at(1200,()=>{
-      showCap('… und landen auf zwei Bären 🐻🐻‍❄️',3000);
-      bears.alive=true;
-      const fadeIn=()=>{
-        bears.alpha=Math.min(bears.alpha+0.025,1);
-        if(bears.alpha<1) requestAnimationFrame(fadeIn);
-        else at(2000,celebrate);
-      };
-      requestAnimationFrame(fadeIn);
-    });
-  }
-
-  // ─ CHAPTER 8: Celebration ─────────────────
-  function celebrate(){
-    showCap('Alles Gute zum Geburtstag, Eisbär! 🎉🎂',0);
-    launchConfetti(300);
-    at(2000,()=>launchConfetti(200));
-    at(4000,()=>launchConfetti(200));
-    // Periodic confetti
-    let ceCount=0;
-    const ceBurst=()=>{
-      launchConfetti(80);
-      burst(rand(W*0.2,W*0.8),H*0.4,20,['#f43f5e','#eab308','#22c55e','#8b5cf6','#ffffff'],{r:6,decay:0.008,upward:4,maxSpd:5,glow:true});
-      ceCount++;
-      if(ceCount<6) at(2000,ceBurst);
-    };
-    at(1000,ceBurst);
-  }
-}
-
-document.getElementById('start-btn').addEventListener('click', startStory);
+function logoutAdmin(){document.getElementById('adminBar').classList.remove('on')}
+
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')});
+},{threshold:0.07});
+document.querySelectorAll('.fi').forEach(el=>obs.observe(el));
+
+buildChart('7d');
+fetchPlayers();
+setInterval(fetchPlayers,60000);
 </script>
 </body>
 </html>
